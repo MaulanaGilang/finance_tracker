@@ -94,7 +94,7 @@ export const api = {
   getCompanyReviews: async (token: string) =>
     (await rpc<CompanyReview[]>('get_company_reviews', { p_token: token })).map((r) => ({ ...r, rating: r.rating == null ? null : Number(r.rating) })),
 
-  getNews: (token: string) => rpc<NewsArticle[]>('get_news', { p_token: token, p_days: 14 }),
+  getNews: (token: string) => rpc<NewsArticle[]>('get_news', { p_token: token, p_days: 7 }),
   setNewsSaved: (token: string, id: number, saved: boolean) => rpc<void>('set_news_saved', { p_token: token, p_id: id, p_saved: saved }),
   /** Ask the fetch-news Edge Function to pull feeds now (it skips if it ran in the last 10 minutes) */
   /** Summarise one story now (when it was opened before the background job reached it) */

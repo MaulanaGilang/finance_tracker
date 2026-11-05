@@ -24,7 +24,7 @@ export function NewsStory() {
     if (loading || news.length === 0) return <Skeleton className="h-[60dvh] w-full rounded-[20px]" />
     return (
       <Card>
-        <Empty title="This story is no longer here" body="Stories older than 30 days are cleared unless you saved them." action={<Link to="/news/feed" className="glow-button inline-flex h-11 items-center rounded-pill bg-accent px-5 text-white">Back to the feed</Link>} />
+        <Empty title="This story is no longer here" body="Stories older than 7 days are cleared unless you saved them." action={<Link to="/news/feed" className="glow-button inline-flex h-11 items-center rounded-pill bg-accent px-5 text-white">Back to the feed</Link>} />
       </Card>
     )
   }

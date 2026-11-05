@@ -356,7 +356,7 @@ function NewsSources() {
       <p className="mb-4 max-w-[62ch] text-[14px] leading-[1.6] text-muted">
         Headlines are pulled from free RSS feeds every 2 hours and tagged by keyword into 7 topics. A story only gets a topic when its
         headline mentions it, or its summary mentions it more than once. "Market mover" means the story mentions several market-moving
-        terms such as inflation, tariffs, yields or oil prices. Unsaved stories are removed after 30 days.
+        terms such as inflation, tariffs, yields or oil prices. Unsaved stories are removed after 7 days.
       </p>
       <div className="flex flex-wrap gap-2">
         {SOURCES.map((s) => (

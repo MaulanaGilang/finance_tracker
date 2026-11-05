@@ -4,6 +4,9 @@
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2'
 import { summarizeUrl } from './summarize.ts'
 
+/** Stories are kept this long unless saved; older feed items aren't fetched at all */
+const RETENTION_DAYS = 7
+
 type Topic = 'ai' | 'robotics' | 'geopolitics' | 'central_banks' | 'energy' | 'trade' | 'semiconductors'
 
 // `topics` = topics implied by the feed itself (a robotics feed is about robotics)
@@ -138,7 +141,7 @@ Deno.serve(async (req) => {
     return Response.json({ skipped: 'fetched less than 10 minutes ago', ...(await summarizePending(db, 60)) })
   }
 
-  const cutoff = Date.now() - 14 * 864e5
+  const cutoff = Date.now() - RETENTION_DAYS * 864e5
   const report: Record<string, number | string> = {}
   const rows: Record<string, unknown>[] = []
 
@@ -184,8 +187,8 @@ Deno.serve(async (req) => {
     upserted += count ?? 0
   }
 
-  // Keep the table small: drop unsaved stories older than 30 days
-  await db.from('news_articles').delete().lt('published_at', new Date(Date.now() - 30 * 864e5).toISOString()).eq('saved', false)
+  // Keep the table small: drop unsaved stories older than a week
+  await db.from('news_articles').delete().lt('published_at', new Date(cutoff).toISOString()).eq('saved', false)
 
   const details = await summarizePending(db, 60)
   return Response.json({ upserted, ...details, feeds: report })

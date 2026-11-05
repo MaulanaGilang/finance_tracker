@@ -5,6 +5,7 @@ import { ArrowRight } from '@phosphor-icons/react'
 import { HeroPanel } from '../../components/HeroPanel'
 import { AnimatedNumber } from '../../components/motion-primitives/animated-number'
 import { ArticleRow } from '../../components/news/Article'
+import { CryptoCard } from '../../components/news/CryptoCard'
 import { Card, CardTitle, Empty, Skeleton } from '../../components/ui'
 import { itemVariants, listVariants, numberSpring } from '../../lib/motion'
 import { GROUPS, GROUP_ORDER, TOPICS, inGroup, isHighImpact, timeAgo, within, type NewsArticle, type NewsGroup } from '../../lib/news'
@@ -73,6 +74,10 @@ export function NewsBriefing() {
             </div>
           </div>
         </HeroPanel>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <CryptoCard />
       </motion.div>
 
       <motion.div variants={itemVariants}>
