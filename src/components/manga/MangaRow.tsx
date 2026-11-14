@@ -5,6 +5,7 @@ import { EASE_OUT } from '../../lib/motion'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
 import { cx } from '../ui'
+import { CoverHover } from './CoverHover'
 
 /** Desktop column template, shared by the heading row and every row */
 export const MANGA_COLS = 'lg:grid-cols-[minmax(0,2.4fr)_6rem_9rem_minmax(0,1fr)_4.75rem]'
@@ -117,7 +118,11 @@ export function MangaRow({ manga, index }: { manga: Manga; index: number }) {
         )}
       >
         <div className="min-w-0">
-          <p className="truncate text-[15px] font-[440]">{manga.title}</p>
+          <p className="flex min-w-0">
+            <CoverHover src={manga.cover_url} title={manga.title}>
+              <span className="block truncate text-[15px] font-[440]">{manga.title}</span>
+            </CoverHover>
+          </p>
           {sub && <p className="truncate text-[13px] text-muted">{sub}</p>}
         </div>
 

@@ -2,11 +2,12 @@ import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { ArrowSquareOut, ArrowsClockwise, MagnifyingGlass } from '@phosphor-icons/react'
 import { api, friendlyError } from '../../lib/api'
-import { SOURCE_LABEL, chapterLabel, notTrackedReason, seriesStatusLabel, type Manga, type MangaCandidate, type MangaStatus } from '../../lib/manga'
+import { SOURCE_LABEL, capitalizeFirst, chapterLabel, notTrackedReason, seriesStatusLabel, type Manga, type MangaCandidate, type MangaStatus } from '../../lib/manga'
 import { isDemo } from '../../lib/demo'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
 import { Sheet } from '../Sheet'
+import { CoverThumb } from './CoverHover'
 import { Button, Field, Segmented, Skeleton, cx, inputClass } from '../ui'
 
 // Only the Add / Save button saves (same rule as the job form)
@@ -55,7 +56,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
     try {
       const saved = await saveManga({
         id: editing?.id,
-        title: title.trim(),
+        title: capitalizeFirst(title.trim()),
         status,
         last_read: ch,
         link: link.trim(),
@@ -70,7 +71,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
       })
       onClose()
       // New titles, renamed ones and new matches get their latest chapter straight away
-      const needsCheck = !editing || pick || title.trim() !== editing.title || (track && editing.skip_check)
+      const needsCheck = !editing || pick || capitalizeFirst(title.trim()) !== editing.title || (track && editing.skip_check)
       if (needsCheck && saved.status === 'reading') checkManga(saved.id).catch(() => {})
     } catch (err) {
       setError(friendlyError(err))
@@ -211,7 +212,8 @@ function MatchPanel({ manga, title, pick, onPick }: { manga: Manga | null; title
   return (
     <section className="flex flex-col gap-3 rounded-card bg-raised/80 px-4 py-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 text-[14px] leading-[1.5]">
+        {manga && !pick && <CoverThumb src={manga.cover_url} title={manga.title} />}
+        <div className="min-w-0 flex-1 text-[14px] leading-[1.5]">
           <p className="text-[13px] font-[480] text-muted">Latest chapter lookup</p>
           {pick ? (
             <p>

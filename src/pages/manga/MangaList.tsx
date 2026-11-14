@@ -3,7 +3,7 @@ import { AnimatePresence } from 'motion/react'
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import { MangaHeadings, MangaRow } from '../../components/manga/MangaRow'
 import { Button, Card, Empty, PageHeader, Segmented, Skeleton, cx, inputClass, selectClass } from '../../components/ui'
-import { hasNew, unread, type Manga, type MangaStatus } from '../../lib/manga'
+import { SERIES_FILTER, hasNew, seriesKey, unread, type Manga, type MangaStatus, type SeriesFilter } from '../../lib/manga'
 import { useStore } from '../../lib/store'
 
 type Show = 'all' | 'new' | 'missing'
@@ -16,6 +16,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
   const [query, setQuery] = useState('')
   const [show, setShow] = useState<Show>('all')
   const [sort, setSort] = useState<Sort>(reading ? 'behind' : 'title')
+  const [series, setSeries] = useState<SeriesFilter>('all')
 
   const mine = useMemo(() => manga.filter((m) => m.status === status), [manga, status])
   const rows = useMemo(() => {
@@ -23,6 +24,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
     const list = mine.filter(
       (m) =>
         (show === 'all' || (show === 'new' ? hasNew(m) : m.skip_check)) &&
+        (series === 'all' || seriesKey(m) === series) &&
         (!q || [m.title, m.matched_title, m.notes].some((s) => s?.toLowerCase().includes(q))),
     )
     const byTitle = (a: Manga, b: Manga) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
@@ -32,10 +34,12 @@ export function MangaList({ status }: { status: MangaStatus }) {
       read: (a, b) => (b.last_read ?? -1) - (a.last_read ?? -1) || byTitle(a, b),
     }
     return list.sort(by[sort])
-  }, [mine, query, show, sort])
+  }, [mine, query, show, sort, series])
 
   const counts = { new: mine.filter(hasNew).length, missing: mine.filter((m) => m.skip_check).length }
-  const filtered = query !== '' || show !== 'all'
+  const filtered = query !== '' || show !== 'all' || series !== 'all'
+  // Only offer the statuses that some title on this list has
+  const seriesCounts = mine.reduce<Record<string, number>>((acc, m) => ((acc[seriesKey(m)] = (acc[seriesKey(m)] ?? 0) + 1), acc), {})
 
   return (
     <div>
@@ -54,7 +58,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
         )}
       </PageHeader>
 
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="relative flex-1">
           <label className="sr-only" htmlFor="manga-search">
             Search titles
@@ -62,6 +66,17 @@ export function MangaList({ status }: { status: MangaStatus }) {
           <MagnifyingGlass size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
           <input id="manga-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search titles" className={cx(inputClass, 'h-11 pl-10')} />
         </div>
+        <label className="flex items-center gap-2 text-[14px] text-muted">
+          Series
+          <select value={series} onChange={(e) => setSeries(e.target.value as SeriesFilter)} className={cx(selectClass, 'h-11 w-auto px-4 pr-9 text-[14px]')}>
+            <option value="all">Any status</option>
+            {SERIES_FILTER.filter((o) => seriesCounts[o.value]).map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label} ({seriesCounts[o.value]})
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="flex items-center gap-2 text-[14px] text-muted">
           Sort
           <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className={cx(selectClass, 'h-11 w-auto px-4 pr-9 text-[14px]')}>
@@ -79,6 +94,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
             onClick={() => {
               setQuery('')
               setShow('all')
+              setSeries('all')
             }}
             className="ml-3 text-accent hover:underline"
           >

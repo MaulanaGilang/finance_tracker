@@ -23,6 +23,9 @@ export interface Manga {
   checked_at: string | null
   /** The checker couldn't confirm this title, so the weekly check skips it */
   skip_check: boolean
+  /** Cover thumbnail from MangaDex or MangaUpdates, for the hover preview */
+  cover_url: string | null
+  cover_checked_at: string | null
   created_at: string
   updated_at: string
 }
@@ -52,6 +55,23 @@ export interface MangaCandidate {
 }
 
 export const SOURCE_LABEL: Record<MangaSource, string> = { mangadex: 'MangaDex', mangaupdates: 'MangaUpdates' }
+
+/** "juujika no rokunin" -> "Juujika no rokunin": only the first letter changes */
+export const capitalizeFirst = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1)
+
+/** The publisher's status, grouped for the filter ("Finished" = the series has ended) */
+export const SERIES_FILTER = [
+  { value: 'ongoing', label: 'Ongoing' },
+  { value: 'completed', label: 'Finished' },
+  { value: 'hiatus', label: 'On hiatus' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'unknown', label: 'Unknown' },
+] as const
+export type SeriesFilter = 'all' | (typeof SERIES_FILTER)[number]['value']
+export const seriesKey = (m: Manga): Exclude<SeriesFilter, 'all'> =>
+  m.series_status === 'ongoing' || m.series_status === 'completed' || m.series_status === 'hiatus' || m.series_status === 'cancelled'
+    ? m.series_status
+    : 'unknown'
 
 /** 61.5 stays 61.5, 12 stays 12, 0.06 stays 0.06 */
 export const chapterLabel = (n: number | null) => (n === null ? '-' : String(Number(n.toFixed(3))))

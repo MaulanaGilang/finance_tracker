@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { motion } from 'motion/react'
 import { ArrowRight } from '@phosphor-icons/react'
+import { CoverHover } from '../../components/manga/CoverHover'
 import { CaughtUpButton, OpenLink } from '../../components/manga/MangaRow'
 import { Button, Card, CardTitle, Empty, PageHeader, Skeleton } from '../../components/ui'
 import { SOURCE_LABEL, chapterLabel, hasNew, lastChecked, mangaKpis, notTrackedReason, unread, unreadLabel, type Manga } from '../../lib/manga'
@@ -125,7 +126,11 @@ function FreshRow({ manga }: { manga: Manga }) {
           <span className="inline-block rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] tabular-nums text-white">{unreadLabel(manga)}</span>
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-[440]">{manga.title}</p>
+          <p className="flex min-w-0">
+            <CoverHover src={manga.cover_url} title={manga.title}>
+              <span className="block truncate text-[15px] font-[440]">{manga.title}</span>
+            </CoverHover>
+          </p>
           <p className="truncate text-[13px] tabular-nums text-muted">
             Ch. {chapterLabel(manga.last_read ?? 0)} → {chapterLabel(manga.latest_chapter)}
             {manga.latest_source && ` · ${SOURCE_LABEL[manga.latest_source]}`}

@@ -166,6 +166,13 @@ export function demoNews(): NewsArticle[] {
 // ---------------------------------------------------------------------------
 // Manga: a few public series, in each state the pages have to handle
 
+/** A plain placeholder cover, so the hover preview can be tried without any network */
+const DEMO_COVER =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="364"><rect width="256" height="364" fill="#7f4d12"/><rect x="18" y="18" width="220" height="328" fill="none" stroke="#f3e5d2" stroke-width="3"/><text x="128" y="190" fill="#f3e5d2" font-family="sans-serif" font-size="22" text-anchor="middle">Demo cover</text></svg>',
+  )
+
 export function demoManga(): Manga[] {
   const now = Date.now()
   const day = 864e5
@@ -187,12 +194,14 @@ export function demoManga(): Manga[] {
     check_status: 'ok',
     checked_at: new Date(now - 2 * day).toISOString(),
     skip_check: false,
+    cover_url: null,
+    cover_checked_at: null,
     created_at: new Date(now - 90 * day).toISOString(),
     updated_at: new Date(now - 3 * day).toISOString(),
     ...o,
   })
   return [
-    row('1', 'Chainsaw Man', { last_read: 100, latest_chapter: 214, latest_source: 'mangaupdates', mu_id: '1', latest_url: 'https://www.mangaupdates.com/' }),
+    row('1', 'Kaiju No. 8', { last_read: 100, latest_chapter: 129, series_status: 'completed', latest_source: 'mangaupdates', mu_id: '1', latest_url: 'https://www.mangaupdates.com/', cover_url: DEMO_COVER }),
     row('2', 'Juujika no Rokunin', { last_read: 128, latest_chapter: 232, latest_source: 'mangadex', mangadex_id: 'x', series_status: 'completed', latest_url: 'https://mangadex.org/' }),
     row('3', 'Kaette Kudasai! Akutsu-san', { last_read: 100, latest_chapter: 100, latest_source: 'mangadex', mangadex_id: 'y' }),
     row('4', 'The Beginning After the End', { last_read: 143, latest_chapter: 143.5, latest_source: 'mangadex', mangadex_id: 'z', series_status: 'hiatus' }),
