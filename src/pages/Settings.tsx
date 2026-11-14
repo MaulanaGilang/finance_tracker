@@ -372,8 +372,8 @@ function MangaCheck() {
         Latest chapters
       </CardTitle>
       <p className="max-w-[62ch] text-[14px] leading-[1.6] text-muted">
-        Every Monday morning each title you're reading is looked up on MangaDex (newest English chapter) and MangaUpdates (newest
-        release it tracks), and the higher number is shown. Completed titles aren't checked. If a title was matched to the wrong series,
+        Every Monday morning each title you're reading is looked up on MangaDex (newest chapter in any language) and MangaUpdates
+        (newest release it tracks), and the higher number is shown. Completed titles aren't checked. If a title was matched to the wrong series,
         open it and pick the right one. "Check now" runs up to 25 titles that weren't checked in the last 5 days.
       </p>
       {msg && (

@@ -1,5 +1,5 @@
-// Latest chapter for each manga you're reading, from two public APIs (no scraping, no accounts):
-//   MangaDex     - newest chapter with an English translation
+// Latest chapter for each comic you're reading (manga, manhwa, webtoon), from two public APIs (no scraping, no accounts):
+//   MangaDex     - newest chapter in any language
 //   MangaUpdates - newest release it tracks (covers series MangaDex doesn't host)
 // The higher of the two wins. Runs weekly from pg_cron in batches; the app can also check one title or search.
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2'
@@ -105,10 +105,10 @@ async function mdManga(id: string) {
   return data
 }
 
-/** Highest English chapter number on MangaDex, with a link to it */
-async function mdLatestEnglish(id: string): Promise<{ chapter: number; url: string } | null> {
+/** Highest chapter number on MangaDex in any language, with a link to it */
+async function mdLatest(id: string): Promise<{ chapter: number; url: string } | null> {
   type Agg = { volumes: Record<string, { chapters: Record<string, { chapter: string; id: string }> }> | [] }
-  const { volumes } = await get<Agg>(`${MD}/manga/${id}/aggregate?translatedLanguage[]=en`)
+  const { volumes } = await get<Agg>(`${MD}/manga/${id}/aggregate`)
   let top: { chapter: number; url: string } | null = null
   for (const v of Object.values(volumes ?? {})) {
     for (const c of Object.values(v.chapters)) {
@@ -181,7 +181,7 @@ async function checkTitle(row: Row) {
 
   const [mdInfo, mdCh] = await Promise.all([
     mangadex_id ? mdManga(mangadex_id).catch(() => null) : null,
-    mangadex_id ? mdLatestEnglish(mangadex_id).catch(() => null) : null,
+    mangadex_id ? mdLatest(mangadex_id).catch(() => null) : null,
   ])
   // A series picked on MangaDex by hand still gets its MangaUpdates twin
   if (!mu_id && mdInfo) mu_id = mdToMu(mdInfo)
