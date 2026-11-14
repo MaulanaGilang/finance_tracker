@@ -3,7 +3,7 @@ import { motion } from 'motion/react'
 import { ArrowRight } from '@phosphor-icons/react'
 import { CaughtUpButton, OpenLink } from '../../components/manga/MangaRow'
 import { Button, Card, CardTitle, Empty, PageHeader, Skeleton } from '../../components/ui'
-import { SOURCE_LABEL, chapterLabel, hasNew, lastChecked, mangaKpis, unread, unreadLabel, type Manga } from '../../lib/manga'
+import { SOURCE_LABEL, chapterLabel, hasNew, lastChecked, mangaKpis, notTrackedReason, unread, unreadLabel, type Manga } from '../../lib/manga'
 import { itemVariants, listVariants } from '../../lib/motion'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
@@ -14,7 +14,7 @@ export function MangaUpdates() {
   const k = mangaKpis(manga)
   const reading = manga.filter((m) => m.status === 'reading')
   const fresh = reading.filter(hasNew).sort((a, b) => unread(b) - unread(a) || a.title.localeCompare(b.title))
-  const missing = reading.filter((m) => m.check_status === 'not_found')
+  const missing = reading.filter((m) => m.skip_check)
   const pending = reading.filter((m) => m.check_status === 'pending').length
   const checked = lastChecked(reading)
 
@@ -36,7 +36,7 @@ export function MangaUpdates() {
       <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Reading" value={k.reading} to="/manga/reading" />
         <Kpi label="With new chapters" value={k.withNew} to="/manga/reading" accent />
-        <Kpi label="Not found" value={k.unmatched} to="/manga/reading" />
+        <Kpi label="Not tracked" value={k.notTracked} to="/manga/reading" />
         <Kpi label="Completed" value={k.completed} to="/manga/completed" />
       </motion.div>
 
@@ -68,17 +68,29 @@ export function MangaUpdates() {
       {missing.length > 0 && (
         <motion.div variants={itemVariants}>
           <Card>
-            <CardTitle>Couldn't find</CardTitle>
-            <p className="mb-4 max-w-[60ch] text-[14px] leading-[1.6] text-muted">
-              No series on MangaDex or MangaUpdates matched these names closely enough. Open one and pick the right series; it's followed from then on.
+            <CardTitle>Not tracked</CardTitle>
+            <p className="mb-4 max-w-[62ch] text-[14px] leading-[1.6] text-muted">
+              The weekly check couldn't confirm these, so it skips them. Keep track of them yourself, or open one and pick its series to start
+              checking it again.
             </p>
-            <div className="flex flex-wrap gap-2">
+            <ul className="-mx-2 flex flex-col">
               {missing.map((m) => (
-                <button key={m.id} onClick={() => openMangaComposer(m)} className="rounded-pill bg-raised px-3 py-1.5 text-[13px] transition-colors hover:bg-line">
-                  {m.title}
-                </button>
+                <li key={m.id}>
+                  <button
+                    onClick={() => openMangaComposer(m)}
+                    className="flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition-colors hover:bg-raised"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px]">{m.title}</span>
+                      <span className="block truncate text-[13px] text-muted">{notTrackedReason(m)}</span>
+                    </span>
+                    <span className="shrink-0 text-[13px] tabular-nums text-muted">
+                      {m.last_read !== null ? `Read to ch. ${chapterLabel(m.last_read)}` : ''}
+                    </span>
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </Card>
         </motion.div>
       )}

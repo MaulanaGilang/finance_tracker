@@ -144,6 +144,7 @@ type Row = {
   mu_id: string | null
   matched_title: string | null
   match_locked: boolean
+  last_read: number | string | null
 }
 
 /** Find (or reuse) the match for one title and read its latest chapter */
@@ -177,15 +178,17 @@ async function checkTitle(row: Row) {
     }
   }
 
-  if (!mangadex_id && !mu_id) return { mangadex_id, mu_id, matched_title, check_status: 'not_found' as const }
+  if (!mangadex_id && !mu_id) return { mangadex_id, mu_id, matched_title, check_status: 'not_found' as const, skip_check: true }
 
+  // undefined = the lookup failed (source down); null = it answered with nothing
   const [mdInfo, mdCh] = await Promise.all([
-    mangadex_id ? mdManga(mangadex_id).catch(() => null) : null,
-    mangadex_id ? mdLatest(mangadex_id).catch(() => null) : null,
+    mangadex_id ? mdManga(mangadex_id).catch(() => undefined) : null,
+    mangadex_id ? mdLatest(mangadex_id).catch(() => undefined) : null,
   ])
   // A series picked on MangaDex by hand still gets its MangaUpdates twin
   if (!mu_id && mdInfo) mu_id = mdToMu(mdInfo)
-  const muInfo = mu_id ? await muSeries(mu_id).catch(() => null) : null
+  const muInfo = mu_id ? await muSeries(mu_id).catch(() => undefined) : null
+  const lookupFailed = mdInfo === undefined || mdCh === undefined || muInfo === undefined
 
   const md = mdCh?.chapter ?? null
   // MangaUpdates reports 0 when it has no release data
@@ -193,6 +196,10 @@ async function checkTitle(row: Row) {
   const fromMd = md !== null && (mu === null || md >= mu)
   const latest = fromMd ? md : mu
   const series_status = mdInfo?.attributes.status ?? (muInfo ? (muInfo.completed ? 'completed' : 'ongoing') : null)
+  // Can't confirm: no chapter number anywhere, or the newest one found is below where you've read.
+  // Flagged titles are left out of the weekly check until you pick their series again.
+  const read = row.last_read == null ? null : Number(row.last_read)
+  const skip_check = latest === null || (read !== null && latest < read)
 
   return {
     mangadex_id,
@@ -203,6 +210,8 @@ async function checkTitle(row: Row) {
     latest_url: fromMd ? mdCh!.url : muInfo?.url ?? (mangadex_id ? `https://mangadex.org/title/${mangadex_id}` : null),
     series_status,
     check_status: latest === null && !mdInfo && !muInfo ? ('failed' as const) : ('ok' as const),
+    // A failed lookup (a source was down) isn't a reason to stop checking: try again next week
+    skip_check: lookupFailed ? false : skip_check,
   }
 }
 
@@ -223,7 +232,7 @@ async function checkAndSave(db: SupabaseClient, row: Row) {
   return data
 }
 
-const COLS = 'id, title, mangadex_id, mu_id, matched_title, match_locked'
+const COLS = 'id, title, mangadex_id, mu_id, matched_title, match_locked, last_read'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -251,12 +260,13 @@ Deno.serve(async (req) => {
       return json(await checkAndSave(db, row as Row))
     }
 
-    // Weekly batch: titles you're reading that weren't checked in the last few days
+    // Weekly batch: titles you're reading that weren't checked in the last few days (flagged ones are skipped)
     const since = new Date(Date.now() - RECHECK_DAYS * 864e5).toISOString()
     const { data: rows, error } = await db
       .from('manga_titles')
       .select(COLS)
       .eq('status', 'reading')
+      .eq('skip_check', false)
       .or(`checked_at.is.null,checked_at.lt.${since}`)
       .order('checked_at', { ascending: true, nullsFirst: true })
       .limit(BATCH)
@@ -273,6 +283,7 @@ Deno.serve(async (req) => {
       .from('manga_titles')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'reading')
+      .eq('skip_check', false)
       .or(`checked_at.is.null,checked_at.lt.${since}`)
     return json({ checked: rows?.length ?? 0, ...tally, remaining: count ?? 0 })
   } catch (e) {

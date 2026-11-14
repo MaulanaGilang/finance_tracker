@@ -21,6 +21,8 @@ export interface Manga {
   series_status: string | null
   check_status: CheckStatus
   checked_at: string | null
+  /** The checker couldn't confirm this title, so the weekly check skips it */
+  skip_check: boolean
   created_at: string
   updated_at: string
 }
@@ -37,6 +39,7 @@ export interface MangaInput {
   mu_id?: string | null
   matched_title?: string | null
   match_locked?: boolean
+  skip_check?: boolean
 }
 
 export interface MangaCandidate {
@@ -56,7 +59,8 @@ export const chapterLabel = (n: number | null) => (n === null ? '-' : String(Num
 /** Chapters released since the one you last read (0 when caught up or unknown) */
 export function unread(m: Manga) {
   // No last-read chapter noted: there's nothing to count from, so no "+N" badge
-  if (m.status !== 'reading' || m.latest_chapter === null || m.last_read === null) return 0
+  // Not tracked: the number found can't be trusted, so it counts nothing as new
+  if (m.status !== 'reading' || m.skip_check || m.latest_chapter === null || m.last_read === null) return 0
   return Math.max(0, m.latest_chapter - m.last_read)
 }
 export const hasNew = (m: Manga) => unread(m) > 0
@@ -84,6 +88,15 @@ export function mangaKpis(list: Manga[]) {
     reading: reading.length,
     completed: list.length - reading.length,
     withNew: reading.filter(hasNew).length,
-    unmatched: reading.filter((m) => m.check_status === 'not_found').length,
+    notTracked: reading.filter((m) => m.skip_check).length,
   }
+}
+
+/** Why a title is not tracked, in plain words */
+export function notTrackedReason(m: Manga) {
+  if (m.check_status === 'not_found') return "Couldn't find this series"
+  if (m.latest_chapter === null) return 'No chapter numbers on MangaDex or MangaUpdates'
+  if (m.last_read !== null && m.latest_chapter < m.last_read)
+    return `Sources only go to ch. ${chapterLabel(m.latest_chapter)}, below where you are`
+  return 'Weekly check turned off'
 }

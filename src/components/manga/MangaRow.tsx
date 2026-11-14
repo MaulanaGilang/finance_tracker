@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
-import { ArrowSquareOut, Check } from '@phosphor-icons/react'
-import { SOURCE_LABEL, chapterLabel, readUrl, seriesStatusLabel, unreadLabel, type Manga } from '../../lib/manga'
+import { ArrowSquareOut, Check, EyeSlash } from '@phosphor-icons/react'
+import { SOURCE_LABEL, chapterLabel, notTrackedReason, readUrl, seriesStatusLabel, unreadLabel, type Manga } from '../../lib/manga'
 import { EASE_OUT } from '../../lib/motion'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
@@ -56,10 +56,24 @@ export function OpenLink({ manga }: { manga: Manga }) {
   )
 }
 
+/** Flag for a title the weekly check skips; hover or tap-and-hold shows why */
+export function NotTracked({ manga }: { manga: Manga }) {
+  return (
+    <span
+      title={`${notTrackedReason(manga)}. Skipped in the weekly check.`}
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-pill bg-raised px-2 py-0.5 text-[12px] font-[480] text-muted ring-1 ring-line"
+    >
+      <EyeSlash size={13} />
+      Not tracked
+    </span>
+  )
+}
+
 /** The latest-chapter cell: number with a "+N" badge, or why there isn't one */
 export function Latest({ manga }: { manga: Manga }) {
   const badge = unreadLabel(manga)
   if (manga.status === 'completed') return <span className="text-muted">-</span>
+  if (manga.skip_check) return <NotTracked manga={manga} />
   if (manga.check_status === 'pending') return <span className="text-[13px] text-muted">Not checked yet</span>
   if (manga.check_status === 'not_found') return <span className="text-[13px] text-expense">Not found</span>
   if (manga.latest_chapter === null) return <span className="text-[13px] text-muted">{manga.check_status === 'failed' ? 'Check failed' : 'No chapters'}</span>
@@ -115,7 +129,9 @@ export function MangaRow({ manga, index }: { manga: Manga; index: number }) {
         <p className="col-span-2 truncate text-[12px] text-muted lg:hidden">
           {manga.last_read !== null ? `Read to ch. ${chapterLabel(manga.last_read)}` : 'No chapter noted'}
           {series && ` · ${series}`}
-          {manga.checked_at && manga.status === 'reading' && ` · checked ${timeAgo(manga.checked_at)}`}
+          {manga.skip_check && manga.status === 'reading'
+            ? ` · ${notTrackedReason(manga)}`
+            : manga.checked_at && manga.status === 'reading' && ` · checked ${timeAgo(manga.checked_at)}`}
         </p>
 
         <span className="hidden text-right text-[14px] tabular-nums lg:block">{chapterLabel(manga.last_read)}</span>

@@ -2,7 +2,7 @@ import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { ArrowSquareOut, ArrowsClockwise, MagnifyingGlass } from '@phosphor-icons/react'
 import { api, friendlyError } from '../../lib/api'
-import { SOURCE_LABEL, chapterLabel, seriesStatusLabel, type Manga, type MangaCandidate, type MangaStatus } from '../../lib/manga'
+import { SOURCE_LABEL, chapterLabel, notTrackedReason, seriesStatusLabel, type Manga, type MangaCandidate, type MangaStatus } from '../../lib/manga'
 import { isDemo } from '../../lib/demo'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
@@ -42,6 +42,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
   const [link, setLink] = useState(editing?.link ?? '')
   const [notes, setNotes] = useState(editing?.notes ?? '')
   const [pick, setPick] = useState<Pick | null>(null)
+  const [track, setTrack] = useState(!editing?.skip_check)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -59,6 +60,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
         last_read: ch,
         link: link.trim(),
         notes,
+        ...(editing && { skip_check: !track }),
         ...(pick && {
           mangadex_id: pick.source === 'mangadex' ? pick.id : null,
           mu_id: pick.source === 'mangaupdates' ? pick.id : null,
@@ -68,7 +70,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
       })
       onClose()
       // New titles, renamed ones and new matches get their latest chapter straight away
-      const needsCheck = !editing || pick || title.trim() !== editing.title
+      const needsCheck = !editing || pick || title.trim() !== editing.title || (track && editing.skip_check)
       if (needsCheck && saved.status === 'reading') checkManga(saved.id).catch(() => {})
     } catch (err) {
       setError(friendlyError(err))
@@ -112,7 +114,8 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
           <Field label="Last read chapter" htmlFor="m-last">
             <div className="flex gap-2">
               <input id="m-last" inputMode="decimal" value={lastRead} onChange={(e) => setLastRead(e.target.value)} placeholder="12" className={cx(inputClass, 'tabular-nums')} />
-              {editing?.latest_chapter != null && parseChapter(lastRead) !== editing.latest_chapter && (
+              {/* Only when the latest is ahead of you, and trusted (never moves you backwards) */}
+              {editing?.latest_chapter != null && !editing.skip_check && (parseChapter(lastRead) ?? -1) < editing.latest_chapter && (
                 <Button type="button" variant="ghost" className="h-12 shrink-0 px-4 text-[14px]" onClick={() => setLastRead(chapterLabel(editing.latest_chapter))}>
                   Caught up
                 </Button>
@@ -129,6 +132,18 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
         </Field>
 
         <MatchPanel manga={editing} title={title} pick={pick} onPick={setPick} />
+
+        {editing && status === 'reading' && !pick && (
+          <label className="-mt-2 flex cursor-pointer items-start gap-3 px-1 text-[14px] leading-[1.5]">
+            <input type="checkbox" checked={track} onChange={(e) => setTrack(e.target.checked)} className="mt-1 size-4 accent-[var(--color-accent)]" />
+            <span>
+              Check this title every week
+              <span className="block text-[13px] text-muted">
+                {editing.skip_check ? `Turned off: ${notTrackedReason(editing).toLowerCase()}.` : 'Turn off to keep track of it yourself.'}
+              </span>
+            </span>
+          </label>
+        )}
 
         <p className={cx('min-h-5 text-[14px] text-expense', !error && 'invisible')} role="alert">
           {error ?? ' '}
@@ -211,6 +226,10 @@ function MatchPanel({ manga, title, pick, onPick }: { manga: Manga | null; title
             <p className="text-muted">Not checked yet.</p>
           ) : manga.check_status === 'not_found' ? (
             <p className="text-expense">Couldn't find this series. Pick it below.</p>
+          ) : manga.skip_check && manga.status === 'reading' ? (
+            <p>
+              <span className="font-[480]">Not tracked.</span> <span className="text-muted">{notTrackedReason(manga)}. Pick the right series below to check it again.</span>
+            </p>
           ) : (
             <p>
               <span className="font-[480]">{manga.matched_title ?? manga.title}</span>

@@ -22,7 +22,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
     const q = query.trim().toLowerCase()
     const list = mine.filter(
       (m) =>
-        (show === 'all' || (show === 'new' ? hasNew(m) : m.check_status === 'not_found')) &&
+        (show === 'all' || (show === 'new' ? hasNew(m) : m.skip_check)) &&
         (!q || [m.title, m.matched_title, m.notes].some((s) => s?.toLowerCase().includes(q))),
     )
     const byTitle = (a: Manga, b: Manga) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
@@ -34,7 +34,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
     return list.sort(by[sort])
   }, [mine, query, show, sort])
 
-  const counts = { new: mine.filter(hasNew).length, missing: mine.filter((m) => m.check_status === 'not_found').length }
+  const counts = { new: mine.filter(hasNew).length, missing: mine.filter((m) => m.skip_check).length }
   const filtered = query !== '' || show !== 'all'
 
   return (
@@ -48,7 +48,7 @@ export function MangaList({ status }: { status: MangaStatus }) {
             options={[
               { value: 'all', label: 'All' },
               { value: 'new', label: `New chapters${counts.new ? ` ${counts.new}` : ''}` },
-              { value: 'missing', label: `Not found${counts.missing ? ` ${counts.missing}` : ''}` },
+              { value: 'missing', label: `Not tracked${counts.missing ? ` ${counts.missing}` : ''}` },
             ]}
           />
         )}

@@ -186,6 +186,7 @@ export function demoManga(): Manga[] {
     series_status: 'ongoing',
     check_status: 'ok',
     checked_at: new Date(now - 2 * day).toISOString(),
+    skip_check: false,
     created_at: new Date(now - 90 * day).toISOString(),
     updated_at: new Date(now - 3 * day).toISOString(),
     ...o,
@@ -195,7 +196,8 @@ export function demoManga(): Manga[] {
     row('2', 'Juujika no Rokunin', { last_read: 128, latest_chapter: 232, latest_source: 'mangadex', mangadex_id: 'x', series_status: 'completed', latest_url: 'https://mangadex.org/' }),
     row('3', 'Kaette Kudasai! Akutsu-san', { last_read: 100, latest_chapter: 100, latest_source: 'mangadex', mangadex_id: 'y' }),
     row('4', 'The Beginning After the End', { last_read: 143, latest_chapter: 143.5, latest_source: 'mangadex', mangadex_id: 'z', series_status: 'hiatus' }),
-    row('5', 'kuroiwa medaka ni watashi', { matched_title: null, check_status: 'not_found', series_status: null }),
+    row('5', 'kuroiwa medaka ni watashi', { matched_title: null, check_status: 'not_found', series_status: null, skip_check: true }),
+    row('9', 'Oh, Those Hanazono Twins', { last_read: 51, latest_chapter: 47, latest_source: 'mangaupdates', series_status: 'completed', skip_check: true }),
     row('6', 'Isekai kara Elf-san ga Ochite Kita no desu ga!?', { last_read: 12, check_status: 'pending', checked_at: null, matched_title: null, series_status: null }),
     row('7', 'Solo Leveling', { status: 'completed', series_status: null, check_status: 'pending', checked_at: null, matched_title: null }),
     row('8', 'Paperbag-kun is in Love', { status: 'completed', series_status: null, check_status: 'pending', checked_at: null, matched_title: null }),
@@ -215,6 +217,7 @@ export function demoSaveManga(list: Manga[], input: MangaInput): Manga {
     mu_id: input.mu_id !== undefined ? input.mu_id : (prev?.mu_id ?? null),
     matched_title: input.matched_title !== undefined ? input.matched_title : (prev?.matched_title ?? null),
     match_locked: input.match_locked ?? prev?.match_locked ?? false,
+    skip_check: input.mangadex_id !== undefined || input.mu_id !== undefined ? false : (input.skip_check ?? prev?.skip_check ?? false),
     updated_at: new Date().toISOString(),
   } as Manga
 }
