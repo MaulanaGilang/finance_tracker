@@ -6,11 +6,9 @@ import { EASE_OUT } from '../../lib/motion'
 const W = 168 // preview width; covers are about 3:4, so roughly 168 x 240
 const GAP = 14
 
-const canHover = () => typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches
-
 /**
  * Shows the series cover beside its title while the mouse is over it.
- * The preview floats above everything (rows clip their contents), and only on devices with a mouse.
+ * The preview floats above everything (rows clip their contents), and only for a mouse pointer.
  */
 export function CoverHover({ src, title, children }: { src: string | null; title: string; children: ReactNode }) {
   const [at, setAt] = useState<{ x: number; y: number } | null>(null)
@@ -28,8 +26,10 @@ export function CoverHover({ src, title, children }: { src: string | null; title
   return (
     <span
       className="min-w-0"
-      onMouseEnter={(e) => show && canHover() && place(e.currentTarget)}
-      onMouseLeave={() => setAt(null)}
+      // A real mouse only (pen and touch taps open the row instead); judged per event, not by what the
+      // device says its main pointer is, since touchscreen laptops often report "touch"
+      onPointerEnter={(e) => show && e.pointerType === 'mouse' && place(e.currentTarget)}
+      onPointerLeave={() => setAt(null)}
     >
       {children}
       {show &&
