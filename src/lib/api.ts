@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { CompanyReview, Job, JobInput } from './jobs'
+import type { Manga, MangaCandidate, MangaInput } from './manga'
 import type { NewsArticle } from './news'
 
 export type TxType = 'income' | 'expense'
@@ -50,6 +51,12 @@ async function rpc<T>(fn: string, args?: Record<string, unknown>): Promise<T> {
   return data as T
 }
 
+async function invoke<T>(fn: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(fn, { body })
+  if (error) throw new ApiError(error.message)
+  return data as T
+}
+
 // Postgres numeric can arrive as a string; normalise once here.
 const toTx = (t: Transaction): Transaction => ({ ...t, amount: Number(t.amount) })
 
@@ -94,6 +101,15 @@ export const api = {
   getCompanyReviews: async (token: string) =>
     (await rpc<CompanyReview[]>('get_company_reviews', { p_token: token })).map((r) => ({ ...r, rating: r.rating == null ? null : Number(r.rating) })),
 
+  getManga: async (token: string) => (await rpc<Manga[]>('get_manga', { p_token: token })).map(toManga),
+  saveManga: async (token: string, m: MangaInput) => toManga(await rpc<Manga>('save_manga', { p_token: token, p_manga: m })),
+  deleteManga: (token: string, id: string) => rpc<void>('delete_manga', { p_token: token, p_id: id }),
+  /** Look up the latest chapter for one title now */
+  checkManga: async (id: string) => toManga(await invoke<Manga>('manga-latest', { action: 'check_one', id })),
+  /** Run one batch of the weekly check (titles not checked in the last 5 days) */
+  checkMangaBatch: () => invoke<{ checked: number; ok?: number; not_found?: number; failed?: number; remaining: number }>('manga-latest', { action: 'check' }),
+  searchManga: async (query: string) => (await invoke<{ results: MangaCandidate[] }>('manga-latest', { action: 'search', query })).results,
+
   getNews: (token: string) => rpc<NewsArticle[]>('get_news', { p_token: token, p_days: 7 }),
   setNewsSaved: (token: string, id: number, saved: boolean) => rpc<void>('set_news_saved', { p_token: token, p_id: id, p_saved: saved }),
   /** Ask the fetch-news Edge Function to pull feeds now (it skips if it ran in the last 10 minutes) */
@@ -115,6 +131,9 @@ const toJob = (j: Job): Job => ({
   salary_min: j.salary_min == null ? null : Number(j.salary_min),
   salary_max: j.salary_max == null ? null : Number(j.salary_max),
 })
+
+const num = (v: number | string | null) => (v == null ? null : Number(v))
+const toManga = (m: Manga): Manga => ({ ...m, last_read: num(m.last_read), latest_chapter: num(m.latest_chapter) })
 
 export function friendlyError(e: unknown): string {
   const msg = e instanceof Error ? e.message : String(e)

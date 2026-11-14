@@ -118,6 +118,18 @@
   --orb-2: #e4dff1;
   --orb-3: #d9e0f2;
 }
+/* Manga = Ochre, like old newsprint */
+:root[data-tool="manga"] {
+  --color-accent: #7f4d12;
+  --color-accent-hover: #663d0d;
+  --color-accent-soft: #f3e5d2;
+  --panel-1: #9c6220;
+  --panel-2: #7f4d12;
+  --panel-3: #54320a;
+  --orb-1: #efdfc8;
+  --orb-2: #eee6d4;
+  --orb-3: #eadac3;
+}
 
 /*
   Soft light shapes. A radial mask fades a flat colour to nothing at the edge: it looks like a

@@ -1,6 +1,7 @@
 import type { Category, Transaction } from './api'
 import type { CompanyReview, Job, JobCategory, JobFlexibility, JobInput, JobStatus } from './jobs'
 import { STATUS } from './jobs'
+import type { Manga, MangaInput } from './manga'
 import type { NewsArticle } from './news'
 import { addMonths, currentMonth } from './format'
 
@@ -160,4 +161,60 @@ export function demoNews(): NewsArticle[] {
     word_count: 640 + i * 90,
     details_status: i === 5 ? 'failed' : 'ok',
   }))
+}
+
+// ---------------------------------------------------------------------------
+// Manga: a few public series, in each state the pages have to handle
+
+export function demoManga(): Manga[] {
+  const now = Date.now()
+  const day = 864e5
+  const row = (id: string, title: string, o: Partial<Manga>): Manga => ({
+    id: `demo-manga-${id}`,
+    title,
+    status: 'reading',
+    last_read: null,
+    link: null,
+    notes: null,
+    mangadex_id: null,
+    mu_id: null,
+    matched_title: title,
+    match_locked: false,
+    latest_chapter: null,
+    latest_source: null,
+    latest_url: null,
+    series_status: 'ongoing',
+    check_status: 'ok',
+    checked_at: new Date(now - 2 * day).toISOString(),
+    created_at: new Date(now - 90 * day).toISOString(),
+    updated_at: new Date(now - 3 * day).toISOString(),
+    ...o,
+  })
+  return [
+    row('1', 'Chainsaw Man', { last_read: 100, latest_chapter: 214, latest_source: 'mangaupdates', mu_id: '1', latest_url: 'https://www.mangaupdates.com/' }),
+    row('2', 'Juujika no Rokunin', { last_read: 128, latest_chapter: 232, latest_source: 'mangadex', mangadex_id: 'x', series_status: 'completed', latest_url: 'https://mangadex.org/' }),
+    row('3', 'Kaette Kudasai! Akutsu-san', { last_read: 100, latest_chapter: 100, latest_source: 'mangadex', mangadex_id: 'y' }),
+    row('4', 'The Beginning After the End', { last_read: 143, latest_chapter: 143.5, latest_source: 'mangadex', mangadex_id: 'z', series_status: 'hiatus' }),
+    row('5', 'kuroiwa medaka ni watashi', { matched_title: null, check_status: 'not_found', series_status: null }),
+    row('6', 'Isekai kara Elf-san ga Ochite Kita no desu ga!?', { last_read: 12, check_status: 'pending', checked_at: null, matched_title: null, series_status: null }),
+    row('7', 'Solo Leveling', { status: 'completed', series_status: null, check_status: 'pending', checked_at: null, matched_title: null }),
+    row('8', 'Paperbag-kun is in Love', { status: 'completed', series_status: null, check_status: 'pending', checked_at: null, matched_title: null }),
+  ]
+}
+
+/** Demo mode only: apply a manga save in memory */
+export function demoSaveManga(list: Manga[], input: MangaInput): Manga {
+  const prev = list.find((m) => m.id === input.id)
+  return {
+    ...(prev ?? demoManga()[5]),
+    ...input,
+    id: prev?.id ?? `demo-manga-${Date.now()}`,
+    link: input.link || null,
+    notes: input.notes || null,
+    mangadex_id: input.mangadex_id !== undefined ? input.mangadex_id : (prev?.mangadex_id ?? null),
+    mu_id: input.mu_id !== undefined ? input.mu_id : (prev?.mu_id ?? null),
+    matched_title: input.matched_title !== undefined ? input.matched_title : (prev?.matched_title ?? null),
+    match_locked: input.match_locked ?? prev?.match_locked ?? false,
+    updated_at: new Date().toISOString(),
+  } as Manga
 }

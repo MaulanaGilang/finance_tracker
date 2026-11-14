@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { demoCategories, demoJobs, demoNews, demoReviews, demoSaveJob, demoTransactions, isDemo } from './demo'
+import { demoCategories, demoJobs, demoManga, demoNews, demoReviews, demoSaveJob, demoSaveManga, demoTransactions, isDemo } from './demo'
+import type { Manga, MangaInput } from './manga'
 import { needsDetails, type NewsArticle } from './news'
 import { api, ApiError, type Category, type CategoryInput, type Transaction, type TransactionInput } from './api'
 import { normalizeCompany, reviewIndex, type CompanyReview, type Job, type JobInput } from './jobs'
@@ -46,7 +47,20 @@ interface Store {
   jobComposer: { open: boolean; editing: Job | null }
   openJobComposer: (editing?: Job) => void
   closeJobComposer: () => void
+
+  manga: Manga[]
+  saveManga: (m: MangaInput) => Promise<Manga>
+  deleteManga: (id: string) => Promise<void>
+  /** Look up one title's latest chapter now */
+  checkManga: (id: string) => Promise<Manga>
+  /** One batch of the weekly check; returns a short report */
+  checkMangaBatch: () => Promise<string>
+  mangaComposer: { open: boolean; editing: Manga | null }
+  openMangaComposer: (editing?: Manga) => void
+  closeMangaComposer: () => void
 }
+
+const sortManga = (list: Manga[]) => [...list].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
 
 const TOKEN_KEY = 'ledger.session'
 const Ctx = createContext<Store | null>(null)
@@ -80,6 +94,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [reviews, setReviews] = useState<CompanyReview[]>([])
   const [news, setNews] = useState<NewsArticle[]>([])
   const [newsRefreshing, setNewsRefreshing] = useState(false)
+  const [manga, setManga] = useState<Manga[]>([])
+  const [mangaComposer, setMangaComposer] = useState<{ open: boolean; editing: Manga | null }>({ open: false, editing: null })
   const navigate = useNavigate()
   const [jobComposer, setJobComposer] = useState<{ open: boolean; editing: Job | null }>({ open: false, editing: null })
   const [composer, setComposer] = useState<{ open: boolean; editing: Transaction | null }>({
@@ -99,6 +115,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCategories([])
     setTransactions([])
     setJobs([])
+    setManga([])
     try {
       setStatus((await api.pinIsSet()) ? 'locked' : 'setup')
     } catch {
@@ -111,7 +128,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setLoading(true)
       setLoadError(null)
       try {
-        const [cats, txs, js, rvs, nws] = await Promise.all([api.getCategories(t), api.getTransactions(t), api.getJobs(t), api.getCompanyReviews(t), api.getNews(t)])
+        const [cats, txs, js, rvs, nws, mgs] = await Promise.all([
+          api.getCategories(t),
+          api.getTransactions(t),
+          api.getJobs(t),
+          api.getCompanyReviews(t),
+          api.getNews(t),
+          // The manga list is optional: if it fails, the other tools still load
+          api.getManga(t).catch((e) => (isSessionError(e) ? Promise.reject(e) : [])),
+        ])
+        setManga(mgs)
         setCategories(cats)
         setTransactions(txs)
         setJobs(js)
@@ -139,6 +165,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setJobs(demoJobs())
       setReviews(demoReviews())
       setNews(demoNews())
+      setManga(demoManga())
       setStatus('ready')
       return
     }
@@ -280,8 +307,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       jobComposer,
       openJobComposer: (editing) => setJobComposer({ open: true, editing: editing ?? null }),
       closeJobComposer: () => setJobComposer((c) => ({ ...c, open: false })),
+
+      manga,
+      saveManga: async (input) => {
+        const saved = isDemo ? demoSaveManga(manga, input) : await guarded((t) => api.saveManga(t, input))
+        setManga((prev) => sortManga([saved, ...prev.filter((x) => x.id !== saved.id)]))
+        setHighlightId(saved.id)
+        return saved
+      },
+      deleteManga: async (id) => {
+        if (!isDemo) await guarded((t) => api.deleteManga(t, id))
+        setManga((prev) => prev.filter((x) => x.id !== id))
+      },
+      checkManga: async (id) => {
+        if (isDemo) return manga.find((m) => m.id === id)!
+        const fresh = await api.checkManga(id)
+        setManga((prev) => prev.map((x) => (x.id === fresh.id ? fresh : x)))
+        return fresh
+      },
+      checkMangaBatch: async () => {
+        if (isDemo || !token) return 'Demo mode: nothing to check.'
+        const r = await api.checkMangaBatch()
+        setManga(await guarded((t) => api.getManga(t)))
+        if (!r.checked) return 'Everything was checked in the last 5 days.'
+        return `Checked ${r.checked} titles${r.not_found ? `, ${r.not_found} not found` : ''}.${r.remaining ? ` ${r.remaining} left: run it again to continue.` : ''}`
+      },
+      mangaComposer,
+      openMangaComposer: (editing) => setMangaComposer({ open: true, editing: editing ?? null }),
+      closeMangaComposer: () => setMangaComposer((c) => ({ ...c, open: false })),
     }),
-    [status, loading, loadError, categories, transactions, jobs, reviews, news, newsRefreshing, navigate, composer, jobComposer, highlightId, token, guarded, load, resetToLock, startSession],
+    [status, loading, loadError, categories, transactions, jobs, reviews, news, newsRefreshing, manga, mangaComposer, navigate, composer, jobComposer, highlightId, token, guarded, load, resetToLock, startSession],
   )
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

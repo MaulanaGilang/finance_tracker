@@ -5,6 +5,8 @@ import {
   ArrowsClockwise,
   ArrowsLeftRight,
   BookmarkSimple,
+  BookOpenText,
+  CheckCircle,
   Newspaper,
   Rows,
   Briefcase,
@@ -21,12 +23,13 @@ import { pillSpring } from '../lib/motion'
 import { useStore } from '../lib/store'
 import { cx } from './ui'
 
-export type Tool = 'budget' | 'jobs' | 'news'
+export type Tool = 'budget' | 'jobs' | 'news' | 'manga'
 
 export const TOOLS = {
   budget: { name: 'Budget', icon: Wallet, home: '/budget' },
   jobs: { name: 'Job Applications', icon: Briefcase, home: '/jobs' },
   news: { name: 'News', icon: Newspaper, home: '/news' },
+  manga: { name: 'Manga', icon: BookOpenText, home: '/manga' },
 } as const
 
 const NAV = {
@@ -47,6 +50,12 @@ const NAV = {
     { to: '/news/feed', label: 'Feed', mobile: 'Feed', icon: Rows },
     { to: '/news/saved', label: 'Saved', mobile: 'Saved', icon: BookmarkSimple },
     { to: '/news/settings', label: 'Settings', mobile: 'Settings', icon: GearSix },
+  ],
+  manga: [
+    { to: '/manga', label: 'Updates', mobile: 'Updates', icon: SquaresFour },
+    { to: '/manga/reading', label: 'Reading', mobile: 'Reading', icon: BookOpenText },
+    { to: '/manga/completed', label: 'Completed', mobile: 'Done', icon: CheckCircle },
+    { to: '/manga/settings', label: 'Settings', mobile: 'Settings', icon: GearSix },
   ],
 } as const
 
@@ -93,11 +102,13 @@ function ToolSwitch({ tool }: { tool: Tool }) {
 }
 
 export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }) {
-  const { openComposer, openJobComposer, refreshNews, newsRefreshing } = useStore()
+  const { openComposer, openJobComposer, openMangaComposer, refreshNews, newsRefreshing } = useStore()
   useToolTheme(tool)
   const nav = NAV[tool]
-  // The primary action per tool: add a transaction, add an application, or pull fresh news
-  const add = () => (tool === 'jobs' ? openJobComposer() : tool === 'news' ? void refreshNews().catch(() => {}) : openComposer())
+  // The primary action per tool: add a transaction, an application or a title, or pull fresh news
+  const add = () =>
+    tool === 'jobs' ? openJobComposer() : tool === 'manga' ? openMangaComposer() : tool === 'news' ? void refreshNews().catch(() => {}) : openComposer()
+  const addLabel = { budget: 'Add transaction', jobs: 'Add application', manga: 'Add title', news: 'Refresh news' }[tool]
   const isNews = tool === 'news'
 
   return (
@@ -158,7 +169,7 @@ export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }
             <TabLink key={item.to} item={item} end={item.to === TOOLS[tool].home} />
           ))}
           <div className="flex justify-center">
-            <AddFab onClick={add} label={tool === 'jobs' ? 'Add application' : isNews ? 'Refresh news' : 'Add transaction'} icon={isNews ? <ArrowsClockwise size={22} weight="bold" className={newsRefreshing ? 'animate-spin' : undefined} /> : undefined} />
+            <AddFab onClick={add} label={addLabel} icon={isNews ? <ArrowsClockwise size={22} weight="bold" className={newsRefreshing ? 'animate-spin' : undefined} /> : undefined} />
           </div>
           {nav.slice(2).map((item) => (
             <TabLink key={item.to} item={item} end={item.to === TOOLS[tool].home} />

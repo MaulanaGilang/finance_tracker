@@ -30,6 +30,7 @@ export function Settings({ tool }: { tool: Tool }) {
         </div>
       )}
       {tool === 'news' && <NewsSources />}
+      {tool === 'manga' && <MangaCheck />}
       {tool === 'jobs' && (
         <Card>
           <CardTitle>Ghost rule</CardTitle>
@@ -217,7 +218,7 @@ const csvCell = (v: string | number) => {
 }
 
 function Backup({ tool }: { tool: Tool }) {
-  const { transactions, categories, jobs } = useStore()
+  const { transactions, categories, jobs, manga } = useStore()
   const catName = new Map(categories.map((c) => [c.id, c.name]))
 
   const exportCsv = () => {
@@ -240,10 +241,19 @@ function Backup({ tool }: { tool: Tool }) {
     download(`job-applications-${todayISO()}.csv`, rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv')
   }
 
+  // Same layout as the original sheet (✅ completed, 👍 reading), plus the latest chapter
+  const exportMangaCsv = () => {
+    const rows = [
+      ['Name', 'Status', 'Chapter', 'Latest Chapter'],
+      ...manga.map((m) => [m.title, m.status === 'completed' ? '✅' : '👍', m.last_read ?? '', m.status === 'reading' ? (m.latest_chapter ?? '') : '']),
+    ]
+    download(`manga-${todayISO()}.csv`, '﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv')
+  }
+
   const exportJson = () =>
     download(
       `ledger-backup-${todayISO()}.json`,
-      JSON.stringify({ exportedAt: new Date().toISOString(), categories, transactions, jobs }, null, 2),
+      JSON.stringify({ exportedAt: new Date().toISOString(), categories, transactions, jobs, manga }, null, 2),
       'application/json',
     )
 
@@ -261,6 +271,10 @@ function Backup({ tool }: { tool: Tool }) {
         ) : tool === 'jobs' ? (
           <Button variant="ghost" onClick={exportJobsCsv} disabled={!jobs.length}>
             <DownloadSimple size={16} /> Job applications (CSV)
+          </Button>
+        ) : tool === 'manga' ? (
+          <Button variant="ghost" onClick={exportMangaCsv} disabled={!manga.length}>
+            <DownloadSimple size={16} /> Manga list (CSV)
           </Button>
         ) : null}
         <Button variant="ghost" onClick={exportJson}>
@@ -323,6 +337,50 @@ function Security() {
           <LockSimple size={16} /> Lock this device
         </Button>
       </div>
+    </Card>
+  )
+}
+
+/** Manga: how the latest chapter is found, and a manual run of the weekly check */
+function MangaCheck() {
+  const { checkMangaBatch } = useStore()
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<string | null>(null)
+  return (
+    <Card>
+      <CardTitle
+        action={
+          <Button
+            variant="ghost"
+            className="h-9 px-4 text-[14px]"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true)
+              try {
+                setMsg(await checkMangaBatch())
+              } catch (e) {
+                setMsg(friendlyError(e))
+              } finally {
+                setBusy(false)
+              }
+            }}
+          >
+            {busy ? 'Checking…' : 'Check now'}
+          </Button>
+        }
+      >
+        Latest chapters
+      </CardTitle>
+      <p className="max-w-[62ch] text-[14px] leading-[1.6] text-muted">
+        Every Monday morning each title you're reading is looked up on MangaDex (newest English chapter) and MangaUpdates (newest
+        release it tracks), and the higher number is shown. Completed titles aren't checked. If a title was matched to the wrong series,
+        open it and pick the right one. "Check now" runs up to 25 titles that weren't checked in the last 5 days.
+      </p>
+      {msg && (
+        <p className="mt-4 text-[14px] text-muted" role="status">
+          {msg}
+        </p>
+      )}
     </Card>
   )
 }

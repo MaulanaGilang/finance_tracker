@@ -8,6 +8,7 @@ import { Atmosphere } from './components/Atmosphere'
 import { Composer } from './components/Composer'
 import { Intro } from './components/Intro'
 import { JobComposer } from './components/jobs/JobComposer'
+import { MangaComposer } from './components/manga/MangaComposer'
 import { PinScreen } from './components/PinScreen'
 import { EASE_OUT, pageVariants } from './lib/motion'
 import { StoreProvider, useStore } from './lib/store'
@@ -15,6 +16,8 @@ import { Dashboard } from './pages/Dashboard'
 import { Applications } from './pages/jobs/Applications'
 import { Board } from './pages/jobs/Board'
 import { JobsDashboard } from './pages/jobs/JobsDashboard'
+import { MangaList } from './pages/manga/MangaList'
+import { MangaUpdates } from './pages/manga/MangaUpdates'
 import { NewsBriefing } from './pages/news/Briefing'
 import { NewsFeed } from './pages/news/Feed'
 import { Reports } from './pages/Reports'
@@ -47,6 +50,13 @@ function ToolPages({ tool }: { tool: Tool }) {
               <Route path="board" element={<Board />} />
               <Route path="settings" element={<Settings tool={tool} />} />
             </>
+          ) : tool === 'manga' ? (
+            <>
+              <Route index element={<MangaUpdates />} />
+              <Route path="reading" element={<MangaList status="reading" />} />
+              <Route path="completed" element={<MangaList status="completed" />} />
+              <Route path="settings" element={<Settings tool={tool} />} />
+            </>
           ) : (
             <>
               <Route index element={<NewsBriefing />} />
@@ -76,7 +86,7 @@ function ToolLayout({ tool }: { tool: Tool }) {
         </div>
       )}
       <ToolPages tool={tool} />
-      {tool === 'budget' ? <Composer /> : tool === 'jobs' ? <JobComposer /> : null}
+      {tool === 'budget' ? <Composer /> : tool === 'jobs' ? <JobComposer /> : tool === 'manga' ? <MangaComposer /> : null}
     </AppShell>
   )
 }
@@ -99,6 +109,7 @@ function Spaces() {
           <Route path="/budget/*" element={<ToolLayout tool="budget" />} />
           <Route path="/jobs/*" element={<ToolLayout tool="jobs" />} />
           <Route path="/news/*" element={<ToolLayout tool="news" />} />
+          <Route path="/manga/*" element={<ToolLayout tool="manga" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </motion.div>
