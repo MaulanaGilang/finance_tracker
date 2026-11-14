@@ -89,9 +89,11 @@ end $$;
 revoke execute on function public.get_manga(text), public.save_manga(text, jsonb), public.delete_manga(text, uuid) from public, authenticated;
 grant execute on function public.get_manga(text), public.save_manga(text, jsonb), public.delete_manga(text, uuid) to anon;
 
--- Weekly check (pg_cron + pg_net): Mondays from 02:00 UTC (09:00 WIB), every 10 minutes for 2 hours.
--- Each run checks up to 25 titles not checked in the last 5 days, so ~300 titles fit in one morning.
--- select cron.schedule('manga-latest-weekly', '*/10 2-3 * * 1', $$ select net.http_post(
---   url := 'https://<project>.supabase.co/functions/v1/manga-latest',
+-- Weekly check (pg_cron + pg_net), applied 2026-11-14 with the same key as fetch-news-every-2h:
+--   manga-latest-weekly  '*/10 2-3 * * 1'  Mondays 02:00-03:50 UTC (09:00-10:50 WIB), every 10 minutes.
+--     Each run checks up to 25 titles not checked in the last 5 days, so ~300 titles fit in one morning.
+--   manga-initial-fill   '*/3 * * * *'     one-off after the import: runs until every reading title has been
+--     checked once, then unschedules itself.
+-- Both call: net.http_post(url := 'https://<project>.supabase.co/functions/v1/manga-latest',
 --   headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer <anon key>'),
---   body := '{"action":"check"}'::jsonb, timeout_milliseconds := 120000) $$);
+--   body := '{"action":"check"}'::jsonb, timeout_milliseconds := 150000)
