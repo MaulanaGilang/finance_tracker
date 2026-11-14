@@ -71,7 +71,7 @@ export function similarity(query: string, candidate: string) {
 const best = (query: string, names: (string | undefined)[]) => Math.max(0, ...names.filter(Boolean).map((n) => similarity(query, n!)))
 
 // Side releases share the main title; never prefer them unless that's what you wrote
-const SIDE = /doujinshi|oneshot|one-shot|fan[- ]colou?red|official colou?red|full colou?r|\bpilot\b|anthology|spin-?off/i
+const SIDE = /doujinshi|oneshot|one-shot|fan[- ]colou?red|official colou?red|full colou?r|\bpilot\b|anthology|spin-?off|art ?book|fan ?book|guide ?book|data ?book|\(novel\)|light novel|web novel/i
 const isSide = (names: string[], query: string) => !SIDE.test(query) && names.some((n) => SIDE.test(n))
 
 // ---------------------------------------------------------------------------

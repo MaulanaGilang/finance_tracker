@@ -55,8 +55,9 @@ export const chapterLabel = (n: number | null) => (n === null ? '-' : String(Num
 
 /** Chapters released since the one you last read (0 when caught up or unknown) */
 export function unread(m: Manga) {
-  if (m.status !== 'reading' || m.latest_chapter === null) return 0
-  return Math.max(0, m.latest_chapter - (m.last_read ?? 0))
+  // No last-read chapter noted: there's nothing to count from, so no "+N" badge
+  if (m.status !== 'reading' || m.latest_chapter === null || m.last_read === null) return 0
+  return Math.max(0, m.latest_chapter - m.last_read)
 }
 export const hasNew = (m: Manga) => unread(m) > 0
 
