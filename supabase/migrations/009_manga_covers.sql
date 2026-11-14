@@ -13,6 +13,11 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('manga-covers', 'manga-covers', true, 2097152, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 on conflict (id) do nothing;
 
--- 2026-11-14 (data, run once): capitalise the first letter of every title
--- update public.manga_titles set title = upper(left(title, 1)) || substr(title, 2), updated_at = now()
--- where left(title, 1) <> upper(left(title, 1));
+-- 2026-11-14 (data, run once): capitalise the first letter of every word in every title
+-- ("juujika no rokunin" -> "Juujika No Rokunin"; letters already in capitals are left alone)
+-- with words as (
+--   select t.id, w.ord, coalesce(m[1] || upper(m[2]) || m[3], w.word) as word
+--   from public.manga_titles t, regexp_split_to_table(t.title, ' ') with ordinality as w(word, ord),
+--        lateral (select regexp_match(w.word, '^([^[:alpha:]]*)(.)(.*)$') as m) x
+-- ), titled as (select id, string_agg(word, ' ' order by ord) as new_title from words group by id)
+-- update public.manga_titles m set title = t.new_title from titled t where m.id = t.id and m.title is distinct from t.new_title;

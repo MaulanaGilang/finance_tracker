@@ -56,8 +56,8 @@ export interface MangaCandidate {
 
 export const SOURCE_LABEL: Record<MangaSource, string> = { mangadex: 'MangaDex', mangaupdates: 'MangaUpdates' }
 
-/** "juujika no rokunin" -> "Juujika no rokunin": only the first letter changes */
-export const capitalizeFirst = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1)
+/** "juujika no rokunin" -> "Juujika No Rokunin": each word's first letter, the rest left as typed ("DEAD Tube" stays) */
+export const capitalizeFirst = (s: string) => s.replace(/(^|\s)([^\p{L}\s]*)(\p{Ll})/gu, (_, sp: string, lead: string, ch: string) => sp + lead + ch.toLocaleUpperCase())
 
 /** The publisher's status, grouped for the filter ("Finished" = the series has ended) */
 export const SERIES_FILTER = [
