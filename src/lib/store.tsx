@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { demoCategories, demoJobs, demoManga, demoNews, demoReviews, demoSaveJob, demoSaveManga, demoTransactions, isDemo } from './demo'
+import { demoCategories, demoJobs, demoLeads, demoManga, demoNews, demoReviews, demoSaveJob, demoSaveManga, demoTransactions, isDemo } from './demo'
+import { todayISO } from './format'
+import type { JobLead, LeadsInfo } from './leads'
 import type { Manga, MangaInput } from './manga'
 import { needsDetails, type NewsArticle } from './news'
 import { api, ApiError, type Category, type CategoryInput, type Transaction, type TransactionInput } from './api'
@@ -47,6 +49,16 @@ interface Store {
   jobComposer: { open: boolean; editing: Job | null }
   openJobComposer: (editing?: Job) => void
   closeJobComposer: () => void
+
+  /** Jobs the scout recommends, still to decide on */
+  leads: JobLead[]
+  leadsInfo: LeadsInfo | null
+  /** Applied: creates the application and moves the job to Applications */
+  applyLead: (id: string) => Promise<Job>
+  /** Hide a recommendation, or bring a hidden one back */
+  setLeadSkipped: (id: string, skipped: boolean) => Promise<void>
+  /** One batch of the company-board scan; returns a short report */
+  scanJobs: () => Promise<string>
 
   manga: Manga[]
   saveManga: (m: MangaInput) => Promise<Manga>
@@ -95,6 +107,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [news, setNews] = useState<NewsArticle[]>([])
   const [newsRefreshing, setNewsRefreshing] = useState(false)
   const [manga, setManga] = useState<Manga[]>([])
+  const [leads, setLeads] = useState<JobLead[]>([])
+  const [leadsInfo, setLeadsInfo] = useState<LeadsInfo | null>(null)
   const [mangaComposer, setMangaComposer] = useState<{ open: boolean; editing: Manga | null }>({ open: false, editing: null })
   const navigate = useNavigate()
   const [jobComposer, setJobComposer] = useState<{ open: boolean; editing: Job | null }>({ open: false, editing: null })
@@ -116,6 +130,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTransactions([])
     setJobs([])
     setManga([])
+    setLeads([])
+    setLeadsInfo(null)
     try {
       setStatus((await api.pinIsSet()) ? 'locked' : 'setup')
     } catch {
@@ -138,6 +154,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           api.getManga(t).catch((e) => (isSessionError(e) ? Promise.reject(e) : [])),
         ])
         setManga(mgs)
+        // Recommendations load on their own: a problem there never blocks the rest
+        api
+          .getJobLeads(t)
+          .then(({ leads: l, ...info }) => {
+            setLeads(l)
+            setLeadsInfo(info)
+          })
+          .catch(() => {})
         setCategories(cats)
         setTransactions(txs)
         setJobs(js)
@@ -166,6 +190,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setReviews(demoReviews())
       setNews(demoNews())
       setManga(demoManga())
+      setLeads(demoLeads())
+      setLeadsInfo({ companies: 23, last_scan: new Date(Date.now() - 5 * 3600e3).toISOString(), last_email: new Date(Date.now() - 2 * 3600e3).toISOString() })
       setStatus('ready')
       return
     }
@@ -308,6 +334,47 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       openJobComposer: (editing) => setJobComposer({ open: true, editing: editing ?? null }),
       closeJobComposer: () => setJobComposer((c) => ({ ...c, open: false })),
 
+      leads,
+      leadsInfo,
+      applyLead: async (id) => {
+        const lead = leads.find((l) => l.id === id)
+        const job = isDemo
+          ? demoSaveJob(jobs, {
+              position: lead!.title, company: lead!.company, location: lead!.location ?? '', category: 'full_time', flexibility: 'onsite',
+              status: 'applied', platform: lead!.source === 'linkedin' ? 'LinkedIn' : lead!.source === 'jobstreet' ? 'JobStreet' : 'Company website',
+              link: lead!.url ?? '', salary_min: lead!.salary_min, salary_max: lead!.salary_max, applied_date: todayISO(), notes: '',
+            })
+          : await guarded((t) => api.applyJobLead(t, id))
+        setLeads((prev) => prev.filter((l) => l.id !== id))
+        setJobs((prev) =>
+          [job, ...prev.filter((x) => x.id !== job.id)].sort(
+            (a, b) => b.applied_date.localeCompare(a.applied_date) || b.created_at.localeCompare(a.created_at),
+          ),
+        )
+        setHighlightId(job.id)
+        return job
+      },
+      setLeadSkipped: async (id, skipped) => {
+        setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: skipped ? 'skipped' : 'new' } : l)))
+        if (isDemo) return
+        try {
+          await guarded((t) => api.setJobLeadStatus(t, id, skipped ? 'skipped' : 'new'))
+        } catch (e) {
+          setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status: skipped ? 'new' : 'skipped' } : l)))
+          throw e
+        }
+      },
+      scanJobs: async () => {
+        if (isDemo || !token) return 'Demo mode: nothing to scan.'
+        const r = await api.scanJobs()
+        const { leads: l, ...info } = await guarded((t) => api.getJobLeads(t))
+        setLeads(l)
+        setLeadsInfo(info)
+        const added = Object.values(r.added).reduce<number>((s, v) => s + (typeof v === 'number' ? v : 0), 0)
+        if (!r.scanned) return 'Every company was checked in the last day.'
+        return `Checked ${r.scanned} companies, ${added} new ${added === 1 ? 'job' : 'jobs'}.${r.remaining ? ` ${r.remaining} companies left: run it again to continue.` : ''}`
+      },
+
       manga,
       saveManga: async (input) => {
         const saved = isDemo ? demoSaveManga(manga, input) : await guarded((t) => api.saveManga(t, input))
@@ -336,7 +403,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       openMangaComposer: (editing) => setMangaComposer({ open: true, editing: editing ?? null }),
       closeMangaComposer: () => setMangaComposer((c) => ({ ...c, open: false })),
     }),
-    [status, loading, loadError, categories, transactions, jobs, reviews, news, newsRefreshing, manga, mangaComposer, navigate, composer, jobComposer, highlightId, token, guarded, load, resetToLock, startSession],
+    [status, loading, loadError, categories, transactions, jobs, reviews, news, newsRefreshing, leads, leadsInfo, manga, mangaComposer, navigate, composer, jobComposer, highlightId, token, guarded, load, resetToLock, startSession],
   )
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

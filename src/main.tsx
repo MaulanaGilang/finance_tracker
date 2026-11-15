@@ -16,6 +16,7 @@ import { Dashboard } from './pages/Dashboard'
 import { Applications } from './pages/jobs/Applications'
 import { Board } from './pages/jobs/Board'
 import { JobsDashboard } from './pages/jobs/JobsDashboard'
+import { Recommended } from './pages/jobs/Recommended'
 import { MangaList } from './pages/manga/MangaList'
 import { MangaUpdates } from './pages/manga/MangaUpdates'
 import { NewsBriefing } from './pages/news/Briefing'
@@ -46,6 +47,7 @@ function ToolPages({ tool }: { tool: Tool }) {
           ) : tool === 'jobs' ? (
             <>
               <Route index element={<JobsDashboard />} />
+              <Route path="recommended" element={<Recommended />} />
               <Route path="applications" element={<Applications />} />
               <Route path="board" element={<Board />} />
               <Route path="settings" element={<Settings tool={tool} />} />

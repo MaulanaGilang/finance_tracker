@@ -15,6 +15,7 @@ import {
   Kanban,
   ListBullets,
   Plus,
+  Sparkle,
   SquaresFour,
   Table,
   Wallet,
@@ -41,8 +42,10 @@ const NAV = {
   ],
   jobs: [
     { to: '/jobs', label: 'Dashboard', mobile: 'Dashboard', icon: SquaresFour },
+    { to: '/jobs/recommended', label: 'Recommended', mobile: 'For you', icon: Sparkle },
     { to: '/jobs/applications', label: 'Applications', mobile: 'List', icon: Table },
-    { to: '/jobs/board', label: 'Board', mobile: 'Board', icon: Kanban },
+    // Phones have room for four tabs: Board is reached from the Table / Board switch on Applications
+    { to: '/jobs/board', label: 'Board', mobile: 'Board', icon: Kanban, desktopOnly: true },
     { to: '/jobs/settings', label: 'Settings', mobile: 'Settings', icon: GearSix },
   ],
   news: [
@@ -105,6 +108,7 @@ export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }
   const { openComposer, openJobComposer, openMangaComposer, refreshNews, newsRefreshing } = useStore()
   useToolTheme(tool)
   const nav = NAV[tool]
+  const mobileNav = nav.filter((i) => !('desktopOnly' in i && i.desktopOnly))
   // The primary action per tool: add a transaction, an application or a title, or pull fresh news
   const add = () =>
     tool === 'jobs' ? openJobComposer() : tool === 'manga' ? openMangaComposer() : tool === 'news' ? void refreshNews().catch(() => {}) : openComposer()
@@ -165,13 +169,13 @@ export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }
         className="fixed inset-x-0 bottom-0 z-20 border-t border-white/70 bg-canvas/60 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
       >
         <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-2">
-          {nav.slice(0, 2).map((item) => (
+          {mobileNav.slice(0, 2).map((item) => (
             <TabLink key={item.to} item={item} end={item.to === TOOLS[tool].home} />
           ))}
           <div className="flex justify-center">
             <AddFab onClick={add} label={addLabel} icon={isNews ? <ArrowsClockwise size={22} weight="bold" className={newsRefreshing ? 'animate-spin' : undefined} /> : undefined} />
           </div>
-          {nav.slice(2).map((item) => (
+          {mobileNav.slice(2).map((item) => (
             <TabLink key={item.to} item={item} end={item.to === TOOLS[tool].home} />
           ))}
         </div>

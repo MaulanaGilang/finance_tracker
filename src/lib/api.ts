@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import type { CompanyReview, Job, JobInput } from './jobs'
+import type { JobLead } from './leads'
 import type { Manga, MangaCandidate, MangaInput } from './manga'
 import type { NewsArticle } from './news'
 
@@ -110,6 +111,16 @@ export const api = {
   checkMangaBatch: () => invoke<{ checked: number; ok?: number; not_found?: number; failed?: number; remaining: number }>('manga-latest', { action: 'check' }),
   searchManga: async (query: string) => (await invoke<{ results: MangaCandidate[] }>('manga-latest', { action: 'search', query })).results,
 
+  getJobLeads: async (token: string) => {
+    const r = await rpc<{ leads: JobLead[]; companies: number; last_scan: string | null; last_email: string | null }>('get_job_leads', { p_token: token })
+    return { ...r, leads: r.leads.map(toLead) }
+  },
+  /** Applied: creates the application (status Applied, today) and returns it */
+  applyJobLead: async (token: string, id: string) => toJob(await rpc<Job>('apply_job_lead', { p_token: token, p_id: id })),
+  setJobLeadStatus: (token: string, id: string, status: 'new' | 'skipped') => rpc<void>('set_job_lead_status', { p_token: token, p_id: id, p_status: status }),
+  /** One batch of the company-board scan (each company at most once a day) */
+  scanJobs: () => invoke<{ scanned: number; added: Record<string, number | string>; remaining: number }>('job-scout', { action: 'scan' }),
+
   getNews: (token: string) => rpc<NewsArticle[]>('get_news', { p_token: token, p_days: 7 }),
   setNewsSaved: (token: string, id: number, saved: boolean) => rpc<void>('set_news_saved', { p_token: token, p_id: id, p_saved: saved }),
   /** Ask the fetch-news Edge Function to pull feeds now (it skips if it ran in the last 10 minutes) */
@@ -133,6 +144,7 @@ const toJob = (j: Job): Job => ({
 })
 
 const num = (v: number | string | null) => (v == null ? null : Number(v))
+const toLead = (l: JobLead): JobLead => ({ ...l, score: Number(l.score), salary_min: num(l.salary_min), salary_max: num(l.salary_max) })
 const toManga = (m: Manga): Manga => ({ ...m, last_read: num(m.last_read), latest_chapter: num(m.latest_chapter) })
 
 export function friendlyError(e: unknown): string {

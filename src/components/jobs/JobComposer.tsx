@@ -22,7 +22,7 @@ import { Sheet } from '../Sheet'
 import { Button, Field, Segmented, cx, inputClass, selectClass } from '../ui'
 import { StatusRing } from './Status'
 
-const PLATFORMS = ['LinkedIn', 'Indeed', 'Glints', 'Dealls', 'Kalibrr', 'Talentics', 'JobStreet', 'Referrals', 'Job Fair', 'Other']
+const PLATFORMS = ['LinkedIn', 'Indeed', 'Glints', 'Dealls', 'Kalibrr', 'Talentics', 'JobStreet', 'Company website', 'Referrals', 'Job Fair', 'Other']
 
 /*
   Only the Add / Save button saves. The form never submits on its own: Enter in a field, a phone keyboard's
