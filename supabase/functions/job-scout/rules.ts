@@ -46,15 +46,18 @@ export const RULES = {
     language_cues: ['fluent', 'fasih', 'menguasai', 'mahir', 'native', 'proficient', 'business level', 'required', 'wajib', 'lancar', 'mampu berbahasa'],
     fee: ['biaya pendaftaran', 'registration fee', 'biaya administrasi', 'uang jaminan', 'deposit', 'biaya pelatihan', 'training fee',
       'transfer sejumlah', 'membayar biaya', 'pay a fee', 'biaya seragam', 'uang muka'],
+    // Outsourcing and staffing companies: you'd work for their client, not for them (skipped, like banks)
+    outsourced_industries: ['staffing', 'recruiting', 'outsourcing', 'human resources services'],
+    // In descriptions, only how agencies talk about their clients ("outsourcing" alone can be a real company's vendor work)
+    outsourced_phrases: ['klien kami', 'our client', 'client kami', 'untuk klien', 'for our client', 'penempatan di', 'ditempatkan di',
+      'on behalf of', 'salah satu klien', 'one of our clients', 'perusahaan klien', 'client company'],
+    // By name, for job cards from emails (no description to read): known agencies, and words agencies put in their names
+    outsourced_companies: ['adecco', 'randstad', 'manpower', 'manpowergroup', 'kelly services', 'hays', 'robert walters', 'michael page', 'persolkelly', 'persol',
+      'gi group', 'experis', 'jac recruitment', 'kerja365', 'outsourcing', 'outsource', 'alih daya', 'alihdaya', 'staffing', 'personnel', 'manpower services',
+      'recruitment', 'rekrutmen', 'talent solutions', 'hr solutions', 'human capital solutions', 'tenaga kerja', 'penyalur', 'job agency'],
   },
   soft: {
     stretch_years: 2,
-    outsourced_industries: ['staffing', 'recruiting', 'outsourcing', 'human resources services', 'consulting'],
-    outsourced_phrases: ['klien kami', 'our client', 'client kami', 'untuk klien', 'for our client', 'outsourcing', 'alih daya', 'penempatan di', 'ditempatkan di',
-      'on behalf of', 'salah satu klien', 'one of our clients'],
-    // Recruitment agencies by name (job cards from emails have no description to catch this)
-    outsourced_companies: ['adecco', 'randstad', 'manpower', 'manpowergroup', 'kelly services', 'hays', 'robert walters', 'michael page', 'persolkelly',
-      'gi group', 'pt adecco personnel indonesia'],
     partner_lending_companies: ['bukuwarung'],
     partner_lending_phrases: ['mitra pinjaman', 'lending partner', 'partner lending', 'mitra pembiayaan', 'referral ke lender', 'refer users to lenders'],
     gender_age: ['pria', 'wanita', 'laki-laki', 'perempuan', 'male', 'female', 'usia maksimal', 'usia maks', 'max age', 'maximum age', 'umur maksimal', 'berusia', 'usia'],
@@ -72,7 +75,7 @@ export const RULES = {
     excel_only: { words: ['excel'], points: -2, only_if_alone: true },
   } as Record<string, { words: string[]; points: number; only_if_alone?: boolean }>,
   de_groups: ['python', 'pipelines', 'warehouse', 'cloud', 'orchestration'],
-  caps_to_maybe: ['outsourced', 'partner_lending', 'internship'],
+  caps_to_maybe: ['partner_lending', 'internship'],
 }
 
 // ---------------------------------------------------------------------------
@@ -186,6 +189,7 @@ const SKIP_FLAGS: Record<string, string> = {
   ai_training_gig: 'AI-training gig.',
   language: 'Needs another language.',
   fee_request: 'Asks you to pay a fee (scam pattern).',
+  outsourced: 'Outsourcing company.',
 }
 const rp = (n: number) => `Rp ${Math.round(n).toLocaleString('id-ID')}`
 
@@ -216,6 +220,8 @@ export function judge(job: Job): Verdict {
   if ((m = find(hard.ai_training, everything))) fire('ai_training_gig', m)
   if ((m = languageRequirement(desc))) fire('language', m)
   if ((m = find(hard.fee, desc))) fire('fee_request', m)
+  if ((m = find(hard.outsourced_industries, job.industry) ?? find(hard.outsourced_companies, job.company) ?? find(hard.outsourced_phrases, desc)))
+    fire('outsourced', m)
 
   if (reasons.length) {
     const note = 'Skipped: ' + reasons.slice(0, 2).map((r) => `${(SKIP_FLAGS[r.rule] ?? r.rule).replace(/\.$/, '')} (${r.match})`).join('; ') + '.'
@@ -227,13 +233,6 @@ export function judge(job: Job): Verdict {
   if (exp !== null && exp >= soft.stretch_years) {
     flags.push(`Stretch: asks ${exp} years.`)
     fire('stretch', `asks ${exp} years`)
-  }
-  const outsourced =
-    find(soft.outsourced_industries, job.industry) ?? find(soft.outsourced_phrases, desc) ?? find(soft.outsourced_companies, job.company)
-  if (outsourced) {
-    flags.push('Outsourced: who is the client?')
-    fire('outsourced', outsourced)
-    caps.add('outsourced')
   }
   if (partner) {
     flags.push('Partner lending: refers users to lenders.')

@@ -94,7 +94,7 @@ export function Recommended() {
       {view === 'filtered' && list.length > 0 && (
         <p className="mb-4 flex gap-2 px-1 text-[13px] leading-[1.5] text-muted">
           <Info size={16} className="mt-px shrink-0" />
-          These broke one of your rules (bank or lending, 3+ years, too senior, pay under Rp 7 jt and so on). They're here so you can check the rules
+          These broke one of your rules (bank or lending, outsourcing company, 3+ years, too senior, pay under Rp 7 jt and so on). They're here so you can check the rules
           got it right.
         </p>
       )}

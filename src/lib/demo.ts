@@ -178,7 +178,7 @@ export function demoLeads(): JobLead[] {
     row('1', { title: 'Junior Data Engineer', company: 'Kirana Logistik', source: 'greenhouse', tier: 'first', score: 10, note: 'Main tools: SQL, Python, Airflow, BigQuery.', flags: ['Stretch: asks 2 years.'] }),
     row('2', { title: 'Data Analyst', company: 'Sinar Retail', source: 'jobstreet', tier: 'apply', score: 3, salary_min: 9e6, salary_max: 12e6, note: 'Main tools: SQL, Power BI.' }),
     row('3', { title: 'Business Intelligence Analyst', company: 'Nusantara Foods', source: 'linkedin', tier: 'maybe', score: 0, description_read: false, note: 'Judged from the title only.', flags: ['Only the title was seen: open it to check the details.'], first_seen_at: new Date(Date.now() - 30 * h).toISOString() }),
-    row('4', { title: 'Data Engineer - 6 Months Contract', company: 'Demo Staffing', source: 'jobstreet', tier: 'maybe', score: 0, description_read: false, salary_min: 25e6, salary_max: 30e6, flags: ['Outsourced: who is the client?', 'Contract.'], note: 'Judged from the title only.' }),
+    row('4', { title: 'Data Engineer - 6 Months Contract', company: 'Demo Staffing', source: 'jobstreet', tier: 'skip', score: 0, description_read: false, salary_min: 25e6, salary_max: 30e6, flags: ['Outsourcing company.'], note: 'Skipped: Outsourcing company (Demo Staffing).' }),
     row('5', { title: 'Junior Data Analyst', company: 'Demo Multifinance', source: 'jobstreet', tier: 'skip', score: 0, description_read: false, note: 'Skipped: Interest-based business (bank / lending) (Demo Multifinance).', flags: ['Interest-based business (bank / lending).'] }),
   ]
 }

@@ -35,8 +35,9 @@ Deno.serve(async (req) => {
     if (body?.action === 'ingest') {
       const { data: s } = await db.from('job_scout_settings').select('ingest_key').single()
       if (!s || body.key !== s.ingest_key) return json({ error: 'bad key' }, 401)
-      // Only alerts from the last 24 hours
-      const mails = ((Array.isArray(body.messages) ? body.messages : []) as Mail[]).filter((m) => Date.parse(m.date) >= cutoff)
+      // Only alerts from the last day. The Gmail script runs once a day at a slightly different minute each time,
+      // so allow 2 hours of overlap; the script's label stops an email being sent twice.
+      const mails = ((Array.isArray(body.messages) ? body.messages : []) as Mail[]).filter((m) => Date.parse(m.date) >= cutoff - 2 * 3600e3)
       const leads = mails.flatMap((m) => fromEmail(m))
       // The same job can come in several emails: keep one
       const unique = [...new Map(leads.map((l) => [`${l.source}:${l.source_job_id}`, l])).values()]
