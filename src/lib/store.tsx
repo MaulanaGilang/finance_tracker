@@ -77,7 +77,7 @@ const sortManga = (list: Manga[]) => [...list].sort((a, b) => a.title.localeComp
 const TOKEN_KEY = 'ledger.session'
 const ACTIVE_KEY = 'ledger.lastActive'
 /** No taps, clicks, keys or scrolling for this long and the app locks itself */
-export const IDLE_LOCK_MS = 5 * 60_000
+export const IDLE_LOCK_MS = 60_000
 const Ctx = createContext<Store | null>(null)
 
 // The session lives in sessionStorage: it survives a reload of the same tab, but a new visit
