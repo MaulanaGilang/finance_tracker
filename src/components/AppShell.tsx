@@ -84,7 +84,7 @@ export function Logo() {
           <circle cx="22" cy="22" r="8.5" fill="none" stroke="currentColor" strokeWidth="3.6" />
         </svg>
       </span>
-      <span className="text-[15px] font-medium tracking-[0.01em]">Ledger</span>
+      <span className="text-[14px] font-medium tracking-[0.01em]">Ledger</span>
     </span>
   )
 }
@@ -146,7 +146,7 @@ export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }
     <div className="min-h-[100dvh]">
       {/* Desktop / tablet: Raycast's floating glass bar */}
       <header className="sticky top-3 z-20 hidden px-8 md:block">
-        <div className="glass-bar mx-auto flex h-12 max-w-[1200px] items-center justify-between gap-4 rounded-[12px] pl-3 pr-2">
+        <div className="glass-bar mx-auto flex h-12 max-w-[1200px] items-center justify-between gap-4 rounded-[8px] pl-4 pr-2">
           <div className="flex items-center gap-3">
             <Link to="/" aria-label="All tools">
               <Logo />

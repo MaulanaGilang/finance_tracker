@@ -164,11 +164,11 @@ function JobSheet({ onClose }: { onClose: () => void }) {
         {/* One per row: three options each don't fit side by side in the sheet */}
         <div className="grid grid-cols-1 gap-4">
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-[480] text-muted">Category</span>
+            <span className="text-[13px] font-medium text-muted">Category</span>
             <Segmented label="Category" value={category} onChange={setCategory} className="w-full" options={(Object.keys(CATEGORY) as JobCategory[]).map((k) => ({ value: k, label: CATEGORY[k] }))} />
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-[480] text-muted">Flexibility</span>
+            <span className="text-[13px] font-medium text-muted">Flexibility</span>
             <Segmented label="Flexibility" value={flexibility} onChange={setFlexibility} className="w-full" options={(Object.keys(FLEXIBILITY) as JobFlexibility[]).map((k) => ({ value: k, label: FLEXIBILITY[k] }))} />
           </div>
         </div>

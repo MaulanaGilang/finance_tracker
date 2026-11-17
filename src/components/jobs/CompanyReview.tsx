@@ -10,7 +10,7 @@ export function RatingChip({ review, className }: { review: CompanyReview | null
   if (!review?.rating) return null
   const tone = review.rating >= 4 ? 'text-income' : review.rating >= 3 ? 'text-ink' : 'text-expense'
   return (
-    <span className={cx('inline-flex items-center gap-1 text-[12px] font-[480] tabular-nums', tone, className)} title={`${review.rating} on ${review.rating_source}`}>
+    <span className={cx('inline-flex items-center gap-1 text-[12px] font-medium tabular-nums', tone, className)} title={`${review.rating} on ${review.rating_source}`}>
       <Star size={12} weight="fill" />
       {review.rating.toFixed(1)}
     </span>
@@ -50,7 +50,7 @@ export function CompanyReviewPanel({ review, company }: { review: CompanyReview 
           <Star size={17} weight={review.rating ? 'fill' : 'regular'} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-[480]">What employees say</span>
+          <span className="block text-[13px] font-medium">What employees say</span>
           <span className="block truncate text-[12px] text-muted">{summary}</span>
         </span>
         {hasDetail && <CaretDown size={16} className={cx('shrink-0 text-muted transition-transform duration-300', open && 'rotate-180')} />}
@@ -103,7 +103,7 @@ function PointList({ title, items, icon, tone }: { title: string; items: string[
   if (!items.length) return null
   return (
     <div>
-      <p className="mb-2 text-[12px] font-[480] text-muted">{title}</p>
+      <p className="mb-2 text-[12px] font-medium text-muted">{title}</p>
       <ul className="flex flex-col gap-2">
         {items.map((p) => (
           <li key={p} className="flex gap-2 text-[13px] leading-[1.45]">

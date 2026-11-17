@@ -54,12 +54,13 @@ export function Sheet({
         }
         exit={wide ? { opacity: 0, scale: 0.98, y: 6, transition: { duration: 0.16, ease: 'easeIn' } } : { y: '100%', transition: { duration: 0.25, ease: 'easeIn' } }}
         className={cx(
-          'relative flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-t-[24px] bg-canvas/85 px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 backdrop-blur-2xl sm:rounded-card sm:border sm:border-line sm:p-8',
+          // Raycast's xl elevation; 20px large-card radius; padding on the 8px grid
+          'elevated relative flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-t-[20px] bg-card/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-6 backdrop-blur-2xl sm:rounded-[20px] sm:p-8',
           maxWidth,
         )}
       >
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-display text-[21px]">{title}</h2>
+          <h2 className="font-display text-[20px]">{title}</h2>
           <IconButton label="Close" type="button" onClick={onClose}>
             <X size={20} />
           </IconButton>

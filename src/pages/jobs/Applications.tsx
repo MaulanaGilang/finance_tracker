@@ -170,7 +170,7 @@ export function Applications() {
         ) : (
           <>
             {/* Column headings, desktop only */}
-            <div className="hidden grid-cols-[minmax(0,2.2fr)_10.5rem_minmax(0,1fr)_minmax(0,0.9fr)_7.5rem_5.5rem_2.25rem] gap-4 px-3 pb-2 text-[12px] font-[480] text-muted lg:grid">
+            <div className="hidden grid-cols-[minmax(0,2.2fr)_10.5rem_minmax(0,1fr)_minmax(0,0.9fr)_7.5rem_5.5rem_2.25rem] gap-4 px-3 pb-2 text-[12px] font-medium text-muted lg:grid">
               <span>Company</span>
               <span>Status</span>
               <span>Type</span>
@@ -197,7 +197,7 @@ function FilterSelect({ label, value, onChange, children }: { label: string; val
   return (
     <label className="min-w-0">
       <span className="sr-only">{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={cx(selectClass, 'h-11 truncate text-[15px]')}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={cx(selectClass, 'h-11 truncate text-[14px]')}>
         {children}
       </select>
     </label>
@@ -230,7 +230,7 @@ function TableRow({ job, index }: { job: Job; index: number }) {
       >
         <div className="min-w-0">
           <p className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-[15px] font-[440]">{job.company}</span>
+            <span className="truncate text-[14px] font-medium">{job.company}</span>
             <RatingChip review={review} className="shrink-0" />
           </p>
           <p className="truncate text-[13px] text-muted">

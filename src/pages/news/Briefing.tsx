@@ -53,7 +53,7 @@ export function NewsBriefing() {
         <HeroPanel>
           <div>
             <p className="mb-3 text-[14px] text-white/70">Stories in the last 24 hours</p>
-            <AnimatedNumber value={d.day.length} springOptions={numberSpring} className="block font-display text-[48px] leading-[1.05] sm:text-[64px]" />
+            <AnimatedNumber value={d.day.length} springOptions={numberSpring} className="block font-display text-[56px] leading-[1.05] sm:text-[64px]" />
             <p className="mt-3 text-[13px] leading-[1.6] text-white/70">
               {d.movers.filter((a) => within(a.published_at, 24)).length} market movers today
               {busiest?.today ? ` · busiest: ${GROUPS[busiest.group].label}` : ''}
@@ -120,7 +120,7 @@ function GroupCard({ group, list }: { group: NewsGroup; list: NewsArticle[] }) {
   return (
     <Card className="px-3 sm:px-5">
       <div className="mb-3 flex items-center justify-between gap-3 px-2">
-        <h2 className="flex items-center gap-2.5 text-[15px] font-[480]">
+        <h2 className="flex items-center gap-2.5 text-[14px] font-medium">
           <span className="size-2.5 rounded-full" style={{ background: color }} />
           {label}
         </h2>

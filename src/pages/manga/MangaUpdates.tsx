@@ -82,7 +82,7 @@ export function MangaUpdates() {
                     className="flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition-colors hover:bg-raised"
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px]">{m.title}</span>
+                      <span className="block truncate text-[14px]">{m.title}</span>
                       <span className="block truncate text-[13px] text-muted">{notTrackedReason(m)}</span>
                     </span>
                     <span className="shrink-0 text-[13px] tabular-nums text-muted">
@@ -103,7 +103,7 @@ function Kpi({ label, value, to, accent }: { label: string; value: number; to: s
   return (
     <Link to={to} className="frost group rounded-card p-5 transition-colors hover:bg-card/80">
       <p className="mb-2 text-[13px] text-muted">{label}</p>
-      <p className="flex items-center justify-between font-display text-[30px] leading-none tabular-nums">
+      <p className="flex items-center justify-between font-display text-[32px] leading-none tabular-nums">
         <span className={accent && value ? 'text-accent' : undefined}>{value}</span>
         <ArrowRight size={16} className="text-muted opacity-0 transition-opacity group-hover:opacity-100" />
       </p>
@@ -123,12 +123,12 @@ function FreshRow({ manga }: { manga: Manga }) {
         className="flex cursor-pointer items-center gap-3 rounded-[10px] px-2 py-3 transition-colors hover:bg-raised"
       >
         <span className="w-12 shrink-0 text-center">
-          <span className="inline-block rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] tabular-nums text-canvas">{unreadLabel(manga)}</span>
+          <span className="inline-block rounded-pill bg-accent px-2 py-0.5 text-[12px] font-medium tabular-nums text-canvas">{unreadLabel(manga)}</span>
         </span>
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0">
             <CoverHover src={manga.cover_url} title={manga.title}>
-              <span className="block truncate text-[15px] font-[440]">{manga.title}</span>
+              <span className="block truncate text-[14px] font-medium">{manga.title}</span>
             </CoverHover>
           </p>
           <p className="truncate text-[13px] tabular-nums text-muted">

@@ -12,7 +12,7 @@ export const MANGA_COLS = 'lg:grid-cols-[minmax(0,2.4fr)_6rem_9rem_minmax(0,1fr)
 
 export function MangaHeadings() {
   return (
-    <div className={cx('hidden gap-4 px-3 pb-2 text-[12px] font-[480] text-muted lg:grid', MANGA_COLS)}>
+    <div className={cx('hidden gap-4 px-3 pb-2 text-[12px] font-medium text-muted lg:grid', MANGA_COLS)}>
       <span>Title</span>
       <span className="text-right">Last read</span>
       <span className="text-right">Latest chapter</span>
@@ -62,7 +62,7 @@ export function NotTracked({ manga }: { manga: Manga }) {
   return (
     <span
       title={`${notTrackedReason(manga)}. Skipped in the weekly check.`}
-      className="inline-flex items-center gap-1 whitespace-nowrap rounded-pill bg-raised px-2 py-0.5 text-[12px] font-[480] text-muted ring-1 ring-line"
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-pill bg-raised px-2 py-0.5 text-[12px] font-medium text-muted ring-1 ring-line"
     >
       <EyeSlash size={13} />
       Not tracked
@@ -87,7 +87,7 @@ export function Latest({ manga }: { manga: Manga }) {
     )
   return (
     <span className="inline-flex items-center gap-2" title={manga.latest_source ? `From ${latestFrom(manga)}` : undefined}>
-      {badge && <span className="rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] text-canvas">{badge}</span>}
+      {badge && <span className="rounded-pill bg-accent px-2 py-0.5 text-[12px] font-medium text-canvas">{badge}</span>}
       <span className="tabular-nums">{chapterLabel(manga.latest_chapter)}</span>
     </span>
   )
@@ -120,7 +120,7 @@ export function MangaRow({ manga, index }: { manga: Manga; index: number }) {
         <div className="min-w-0">
           <p className="flex min-w-0">
             <CoverHover src={manga.cover_url} title={manga.title}>
-              <span className="block truncate text-[15px] font-[440]">{manga.title}</span>
+              <span className="block truncate text-[14px] font-medium">{manga.title}</span>
             </CoverHover>
           </p>
           {sub && <p className="truncate text-[13px] text-muted">{sub}</p>}

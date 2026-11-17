@@ -47,7 +47,7 @@ export function Dashboard() {
             <AnimatedMoney
               value={t.net}
               signed
-              className={cx('block font-display text-[40px] leading-[1.1] sm:text-[56px]', t.net < 0 && 'text-expense')}
+              className={cx('block font-display text-[32px] leading-[1.1] sm:text-[56px]', t.net < 0 && 'text-expense')}
             />
             <p className="mt-3 text-[13px] text-white/70">
               {t.income > 0 ? `You kept ${Math.max(0, Math.round((t.net / t.income) * 100))}% of your income.` : 'No income recorded yet.'}
@@ -133,7 +133,7 @@ function Stat({ label, value, delta, goodWhenUp }: { label: string; value: numbe
           <Delta value={delta} goodWhenUp={goodWhenUp} onDark />
         </span>
       </div>
-      <AnimatedMoney value={value} className="block font-display text-[19px] sm:mb-2 sm:text-[21px]" />
+      <AnimatedMoney value={value} className="block font-display text-[18px] sm:mb-2 sm:text-[20px]" />
       <span className="hidden sm:inline">
         <Delta value={delta} goodWhenUp={goodWhenUp} onDark />
       </span>
@@ -157,7 +157,7 @@ function InsightTile({ insight }: { insight: Insight }) {
         <Icon size={18} />
       </span>
       <div className="min-w-0">
-        <p className="mb-1 text-[12px] font-[480] text-muted">{insight.label}</p>
+        <p className="mb-1 text-[12px] font-medium text-muted">{insight.label}</p>
         <p className="text-[14px] leading-[1.4] text-ink">{insight.text}</p>
       </div>
     </div>

@@ -44,7 +44,7 @@ export function NewsFeed({ savedOnly = false }: { savedOnly?: boolean }) {
   const chip = (active: boolean) =>
     cx(
       'inline-flex h-9 shrink-0 items-center gap-2 rounded-pill border px-3.5 text-[14px] transition-colors',
-      active ? 'border-accent bg-accent-soft font-[480] text-accent' : 'border-line bg-card/70 text-ink hover:border-line-strong',
+      active ? 'border-accent bg-accent-soft font-medium text-accent' : 'border-line bg-card/70 text-ink hover:border-line-strong',
     )
 
   const subChip = (active: boolean) =>

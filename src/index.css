@@ -17,11 +17,16 @@
   --color-raised: #111214;
   --color-line: #1b1c1e;
   --color-line-strong: #363739;
-  --color-ink: #f4f4f5;
+  /* Pure White for headings and high-emphasis text, Ash secondary, Smoke muted */
+  --color-ink: #ffffff;
   --color-muted: #9c9c9d;
   --color-faint: #6a6b6c;
   --color-mist: #e6e6e6;
   --color-iron: #454647;
+  /* Dark button borders and labels on ghost buttons */
+  --color-slate: #2f3031;
+  /* Warm coral-tinted backdrop (Ember Hush) */
+  --color-ember: #452324;
   --color-coral: #ff6363;
   --color-accent: #ff6363;
   --color-accent-hover: #ff8080;
@@ -44,10 +49,11 @@
   letter-spacing: 0.004em;
 }
 
-/* Technical micro-labels: version strings, keyboard hints, eyebrows */
+/* Technical micro-labels: Geist Mono, 10px uppercase eyebrow tags */
 @utility eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--color-faint);
@@ -71,15 +77,23 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-weight: 400;
-    font-feature-settings: "calt", "kern", "liga", "ss03", "cv11";
+    font-feature-settings: "calt", "kern", "liga", "ss03";
     -webkit-font-smoothing: antialiased;
   }
+  /* Geist Mono's own features */
+  .font-mono,
+  .eyebrow,
+  .kbd,
+  code {
+    font-feature-settings: "calt", "kern", "liga", "ss03", "ss09";
+  }
+  /* Focus and selection stay neutral: colour is rationed, coral is a brand mark, not a control colour */
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid rgb(255 255 255 / 0.7);
     outline-offset: 2px;
   }
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    background: rgb(255 255 255 / 0.22);
   }
   input[type="date"]::-webkit-calendar-picker-indicator {
     opacity: 0.55;
@@ -139,10 +153,11 @@
 */
 .frost {
   background: rgb(7 8 10 / 0.86);
+  /* Raycast's exact key stack: white 5% top highlight, white 25% hairline ring, black 20% bottom edge */
   box-shadow:
-    rgb(255 255 255 / 0.06) 0 1px 0 0 inset,
-    rgb(255 255 255 / 0.08) 0 0 0 1px,
-    rgb(0 0 0 / 0.35) 0 -1px 0 0 inset;
+    rgb(255 255 255 / 0.05) 0 1px 0 0 inset,
+    rgb(255 255 255 / 0.25) 0 0 0 1px,
+    rgb(0 0 0 / 0.2) 0 -1px 0 0 inset;
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
@@ -171,9 +186,9 @@
     radial-gradient(70% 90% at 0% 100%, color-mix(in srgb, var(--panel-accent, var(--color-accent)) 12%, transparent) 0%, transparent 65%),
     var(--color-card);
   box-shadow:
-    rgb(255 255 255 / 0.07) 0 1px 0 0 inset,
-    rgb(255 255 255 / 0.09) 0 0 0 1px,
-    rgb(0 0 0 / 0.4) 0 -1px 0 0 inset;
+    rgb(255 255 255 / 0.05) 0 1px 0 0 inset,
+    rgb(255 255 255 / 0.25) 0 0 0 1px,
+    rgb(0 0 0 / 0.2) 0 -1px 0 0 inset;
   color: var(--color-ink);
 }
 .glow-panel .light {
@@ -189,31 +204,36 @@
   -webkit-backdrop-filter: blur(16px);
 }
 
-/* Primary action: neutral Mist fill with Iron text; hover lifts it slightly, never a coloured glow */
+/* Primary action: neutral Mist fill with Iron text and the download button's subtle lift; never a coloured glow */
 .glow-button {
   background-color: var(--color-mist);
-  color: #1b1c1e;
-  box-shadow: rgb(0 0 0 / 0.03) 0 7px 3px 0, rgb(0 0 0 / 0.25) 0 4px 4px 0, rgb(255 255 255 / 0.6) 0 1px 0 0 inset;
+  color: var(--color-iron);
+  box-shadow: rgb(0 0 0 / 0.03) 0 7px 3px 0, rgb(0 0 0 / 0.25) 0 4px 4px 0;
   transition: background-color 200ms ease, box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms ease;
 }
 .glow-button:hover {
-  background-color: #ffffff;
+  background-color: #f2f2f2;
 }
 
-/* Keyboard hint, like ⌘K */
+/* Keyboard hint, like ⌘K: a Graphite badge, 6px radius, 0 6px padding */
 .kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 5px;
-  border-radius: 5px;
+  padding: 0 6px;
+  border-radius: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-muted);
-  background: var(--color-raised);
-  box-shadow: rgb(255 255 255 / 0.08) 0 0 0 1px, rgb(0 0 0 / 0.5) 0 -1px 0 0 inset;
+  background: #1b1c1e;
+  box-shadow: rgb(255 255 255 / 0.1) 0 1px 0 0 inset;
+}
+
+/* Modal surfaces (launcher, sheets): Raycast's xl elevation */
+.elevated {
+  box-shadow: rgb(0 0 0 / 0.4) 0 4px 40px 8px, rgb(0 0 0 / 0.8) 0 0 0 0.5px, rgb(255 255 255 / 0.3) 0 0.5px 0 0 inset;
 }
 
 @keyframes drift {

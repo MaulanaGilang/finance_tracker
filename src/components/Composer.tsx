@@ -126,7 +126,7 @@ function ComposerSheet({ onClose }: { onClose: () => void }) {
         className="relative flex max-h-[92dvh] w-full flex-col overflow-y-auto rounded-t-[24px] bg-canvas/85 px-5 backdrop-blur-2xl pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 sm:max-w-[480px] sm:rounded-card sm:border sm:border-line sm:p-8"
       >
         <div className="mb-6 flex items-center justify-between">
-          <h2 id="composer-title" className="font-display text-[21px]">
+          <h2 id="composer-title" className="font-display text-[20px]">
             {editing ? 'Edit transaction' : 'New transaction'}
           </h2>
           <IconButton label="Close" type="button" onClick={onClose}>
@@ -146,7 +146,7 @@ function ComposerSheet({ onClose }: { onClose: () => void }) {
         />
 
         <div className="mb-6">
-          <label htmlFor="amount" className="mb-2 block text-[13px] font-[480] text-muted">
+          <label htmlFor="amount" className="mb-2 block text-[13px] font-medium text-muted">
             Amount
           </label>
           <div className="flex items-baseline gap-2 border-b border-line-strong pb-2 focus-within:border-accent">
@@ -163,7 +163,7 @@ function ComposerSheet({ onClose }: { onClose: () => void }) {
                 setAmount(n ? formatNumber(n) : '')
               }}
               className={cx(
-                'w-full min-w-0 bg-transparent font-display text-[36px] leading-[1.15] tabular-nums placeholder:text-line-strong focus:outline-none',
+                'w-full min-w-0 bg-transparent font-display text-[32px] leading-[1.15] tabular-nums placeholder:text-line-strong focus:outline-none',
                 type === 'income' && 'text-income',
               )}
             />
@@ -171,7 +171,7 @@ function ComposerSheet({ onClose }: { onClose: () => void }) {
         </div>
 
         <fieldset className="mb-6">
-          <legend className="mb-3 text-[13px] font-[480] text-muted">Category</legend>
+          <legend className="mb-3 text-[13px] font-medium text-muted">Category</legend>
           {options.length === 0 ? (
             <p className="text-[14px] text-muted">No {type} categories yet. Add one in Settings.</p>
           ) : (
@@ -186,7 +186,7 @@ function ComposerSheet({ onClose }: { onClose: () => void }) {
                     aria-pressed={active}
                     className={cx(
                       'inline-flex h-9 items-center gap-2 rounded-pill border px-3.5 text-[14px] transition-colors',
-                      active ? 'border-accent bg-accent-soft font-[480] text-accent' : 'border-line bg-card text-ink hover:border-line-strong',
+                      active ? 'border-accent bg-accent-soft font-medium text-accent' : 'border-line bg-card text-ink hover:border-line-strong',
                     )}
                   >
                     <span className="size-2.5 rounded-full" style={{ background: c.color }} />

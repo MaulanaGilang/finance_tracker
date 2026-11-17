@@ -83,8 +83,8 @@ export function PinScreen() {
   if (status === 'offline') {
     return (
       <Centered>
-        <h1 className="font-display text-[28px]">Can't reach your data</h1>
-        <p className="max-w-[32ch] text-center text-[15px] leading-[1.5] text-muted">
+        <h1 className="font-display text-[24px]">Can't reach your data</h1>
+        <p className="max-w-[32ch] text-center text-[14px] leading-[1.5] text-muted">
           Check your internet connection, then try again.
         </p>
         <Button variant="primary" onClick={() => reload()}>
@@ -110,8 +110,8 @@ export function PinScreen() {
   return (
     <Centered>
       <div className="flex flex-col items-center gap-3 text-center">
-        <h1 className="font-display text-[26px] leading-[1.2] sm:text-[28px]">{title}</h1>
-        <p className="max-w-[30ch] text-[15px] leading-[1.5] text-muted">{subtitle}</p>
+        <h1 className="font-display text-[24px] leading-[1.2] sm:text-[32px]">{title}</h1>
+        <p className="max-w-[30ch] text-[14px] leading-[1.5] text-muted">{subtitle}</p>
       </div>
 
       <div ref={dotsRef} className="flex gap-3.5" aria-label={`${pin.length} of ${LEN} digits entered`} role="status">

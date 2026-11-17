@@ -93,7 +93,7 @@ export function Board() {
               >
                 <header data-drop-status={s} className="mb-2 flex items-center gap-2 px-1.5 pt-1">
                   <StatusRing status={s} />
-                  <h2 className="flex-1 text-[14px] font-[480]">{STATUS[s].label}</h2>
+                  <h2 className="flex-1 text-[14px] font-medium">{STATUS[s].label}</h2>
                   <span className="rounded-pill bg-raised px-2 text-[12px] tabular-nums text-muted">{list.length}</span>
                 </header>
                 <div data-drop-status={s} className="flex min-h-[120px] flex-1 flex-col gap-2">
@@ -187,7 +187,7 @@ function BoardCard({
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0 items-center gap-1.5">
-            <span className="truncate text-[14px] font-[480]">{job.company}</span>
+            <span className="truncate text-[14px] font-medium">{job.company}</span>
             <RatingChip review={review} className="shrink-0" />
           </p>
           <p className="truncate text-[13px] text-muted">{job.position}</p>

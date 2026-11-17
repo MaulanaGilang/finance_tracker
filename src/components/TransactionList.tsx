@@ -42,17 +42,17 @@ export function TransactionRow({ tx, index = 0 }: { tx: Transaction; index?: num
           )}
         </AnimatePresence>
         <span
-          className="relative flex size-10 shrink-0 items-center justify-center rounded-full text-[14px] font-[480] text-white"
+          className="relative flex size-10 shrink-0 items-center justify-center rounded-full text-[14px] font-medium text-white"
           style={{ background: cat?.color ?? '#B9BDB7' }}
           aria-hidden
         >
           {(cat?.name ?? '?').charAt(0)}
         </span>
         <span className="relative min-w-0 flex-1">
-          <span className="block truncate text-[15px] font-[440]">{tx.note || cat?.name || 'Uncategorised'}</span>
+          <span className="block truncate text-[14px] font-medium">{tx.note || cat?.name || 'Uncategorised'}</span>
           <span className="block truncate text-[13px] text-muted">{tx.note ? cat?.name ?? 'Uncategorised' : dayLabel(tx.date)}</span>
         </span>
-        <Money value={tx.amount} type={tx.type} className="relative shrink-0 text-[15px] font-[480]" />
+        <Money value={tx.amount} type={tx.type} className="relative shrink-0 text-[14px] font-medium" />
       </button>
     </motion.li>
   )
@@ -83,7 +83,7 @@ export function GroupedTransactions({ items }: { items: Transaction[] }) {
               className="overflow-hidden"
             >
               <header className="mb-1 flex items-center justify-between px-2 sm:px-3">
-                <h3 className="text-[13px] font-[480] text-muted">{dayLabel(date)}</h3>
+                <h3 className="text-[13px] font-medium text-muted">{dayLabel(date)}</h3>
                 <span className={cx('text-[13px] tabular-nums', net >= 0 ? 'text-income' : 'text-muted')}>
                   {net >= 0 ? '+' : '-'}
                   {formatIDR(Math.abs(net))}

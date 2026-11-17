@@ -42,11 +42,11 @@ export function ToolChooser() {
       <motion.main className="flex flex-1 flex-col justify-center gap-10 py-8" variants={listVariants} initial="initial" animate="animate">
         <motion.div variants={itemVariants} className="flex flex-col items-center text-center">
           <p className="eyebrow mb-4">{greeting()}</p>
-          <h1 className="text-balance text-[36px] font-normal leading-[1.12] tracking-[0.004em] sm:text-[56px]">What are we tracking?</h1>
+          <h1 className="text-balance text-[32px] font-normal leading-[1.12] tracking-[0.004em] sm:text-[56px]">What are we tracking?</h1>
           {/* Raycast's front door: one bar to reach everything */}
           <button
             onClick={openLauncher}
-            className="mt-8 flex h-12 w-full max-w-[520px] items-center gap-3 rounded-[12px] bg-white/[0.04] px-4 text-left text-[15px] text-faint shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_0_0_1px_rgb(255_255_255/0.09)] transition-colors hover:bg-white/[0.06] hover:text-muted"
+            className="mt-8 flex h-12 w-full max-w-[520px] items-center gap-3 rounded-[8px] bg-white/[0.05] px-3 text-left text-[16px] text-muted transition-colors hover:bg-white/[0.07]"
           >
             <MagnifyingGlass size={18} />
             <span className="flex-1 truncate">
@@ -111,8 +111,7 @@ function ToolCard({ to, icon, title, body, stat, accent }: { to: string; icon: R
         <span className="light transition-opacity duration-500 group-hover:opacity-40" style={{ width: 280, height: 280, right: '-18%', top: '-45%', background: accent, opacity: 0.22 }} />
 
         <span
-          className="flex size-11 items-center justify-center rounded-full bg-[#1b1c1e] shadow-[inset_0_1px_0_rgb(255_255_255/0.1),0_0_0_1px_rgb(255_255_255/0.06)]"
-          style={{ color: accent }}
+          className="flex size-11 items-center justify-center rounded-full bg-[#1b1c1e] text-mist shadow-[inset_0_1px_0_rgb(255_255_255/0.1),0_0_0_1px_rgb(255_255_255/0.06)]"
         >
           {icon}
         </span>

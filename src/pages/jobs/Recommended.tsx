@@ -79,7 +79,7 @@ export function Recommended() {
             <span>
               {msg.text}
               {msg.applied && (
-                <Link to="/jobs/applications" className="ml-2 font-[480] text-accent hover:underline">
+                <Link to="/jobs/applications" className="ml-2 font-medium text-accent hover:underline">
                   Open Applications
                 </Link>
               )}
@@ -137,7 +137,7 @@ function TierCard({ tier, leads, onMessage }: { tier: LeadTier; leads: JobLead[]
   return (
     <Card className="px-2 py-3 sm:px-3 sm:py-4">
       <div className="mb-1 flex items-baseline justify-between gap-3 px-2 sm:px-3">
-        <h2 className="text-[15px] font-[480]">
+        <h2 className="text-[14px] font-medium">
           {TIER[tier].label} <span className="font-normal text-muted">{leads.length}</span>
         </h2>
         <p className="hidden text-[13px] text-muted sm:block">{TIER[tier].hint}</p>
@@ -192,11 +192,11 @@ function LeadRow({ lead, onMessage }: { lead: JobLead; onMessage: (m: { text: st
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0 items-center gap-2">
             {lead.url ? (
-              <a href={lead.url} target="_blank" rel="noreferrer" className="truncate text-[15px] font-[440] hover:text-accent hover:underline">
+              <a href={lead.url} target="_blank" rel="noreferrer" className="truncate text-[14px] font-medium hover:text-accent hover:underline">
                 {lead.title}
               </a>
             ) : (
-              <span className="truncate text-[15px] font-[440]">{lead.title}</span>
+              <span className="truncate text-[14px] font-medium">{lead.title}</span>
             )}
             {lead.url && <ArrowSquareOut size={14} className="shrink-0 text-muted" aria-hidden />}
           </p>

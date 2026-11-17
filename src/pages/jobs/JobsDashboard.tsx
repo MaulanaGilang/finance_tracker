@@ -71,7 +71,7 @@ export function JobsDashboard() {
         <HeroPanel>
           <div>
             <p className="mb-3 text-[14px] text-white/70">Active applications</p>
-            <AnimatedNumber value={k.active} springOptions={numberSpring} className="block font-display text-[48px] leading-[1.05] sm:text-[64px]" />
+            <AnimatedNumber value={k.active} springOptions={numberSpring} className="block font-display text-[56px] leading-[1.05] sm:text-[64px]" />
             <p className="mt-3 text-[13px] leading-[1.6] text-white/70">
               {k.total} sent · {Math.round(k.responseRate * 100)}% got a response
               <br />
@@ -158,7 +158,7 @@ function HeroStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="glass-on-dark min-w-0 rounded-card px-4 py-3.5 sm:p-5">
       <p className="mb-1.5 truncate text-[13px] text-white/70">{label}</p>
-      <AnimatedNumber value={value} springOptions={numberSpring} className="block font-display text-[24px] sm:text-[28px]" />
+      <AnimatedNumber value={value} springOptions={numberSpring} className="block font-display text-[24px] sm:text-[32px]" />
     </div>
   )
 }
@@ -181,7 +181,7 @@ function Funnel({ stages }: { stages: ReturnType<typeof funnel> }) {
             />
           </span>
           <span className="flex w-[5.5rem] items-baseline justify-end gap-2 tabular-nums">
-            <span className="text-[15px] font-[480]">{s.reached}</span>
+            <span className="text-[14px] font-medium">{s.reached}</span>
             <span className="w-10 text-right text-[12px] text-muted">{s.conversion === null ? '' : `${Math.round(s.conversion * 100)}%`}</span>
           </span>
         </li>
@@ -212,10 +212,10 @@ function GoingQuiet({ items }: { items: ReturnType<typeof goingQuiet> }) {
                 <button onClick={() => openJobComposer(job)} className="flex w-full items-center gap-3 rounded-[10px] px-2 py-2.5 text-left transition-colors hover:bg-raised">
                   <HourglassMedium size={18} className="shrink-0 text-accent" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-[440]">{job.company}</span>
+                    <span className="block truncate text-[14px] font-medium">{job.company}</span>
                     <span className="block truncate text-[12px] text-muted">{job.position}</span>
                   </span>
-                  <span className={cx('shrink-0 rounded-pill px-2.5 py-1 text-[12px] font-[480] tabular-nums', daysLeft <= 1 ? 'bg-expense/10 text-expense' : 'bg-accent-soft text-accent')}>
+                  <span className={cx('shrink-0 rounded-pill px-2.5 py-1 text-[12px] font-medium tabular-nums', daysLeft <= 1 ? 'bg-expense/10 text-expense' : 'bg-accent-soft text-accent')}>
                     {daysLeft === 0 ? 'today' : `${daysLeft}d left`}
                   </span>
                 </button>
@@ -246,17 +246,17 @@ function Salary({ data }: { data: ReturnType<typeof salaryOverview> }) {
       <dl className="mb-6 grid grid-cols-3 gap-4">
         <div>
           <dt className="mb-1 text-[13px] text-muted">Median offer</dt>
-          <dd className="font-display text-[21px] tabular-nums sm:text-[24px]">Rp {formatJuta(data.median)}</dd>
+          <dd className="font-display text-[20px] tabular-nums sm:text-[24px]">Rp {formatJuta(data.median)}</dd>
         </div>
         <div>
           <dt className="mb-1 text-[13px] text-muted">Range seen</dt>
-          <dd className="text-[16px] font-[480] tabular-nums sm:text-[18px]">
+          <dd className="text-[16px] font-medium tabular-nums sm:text-[18px]">
             {formatJuta(data.floor)} - {formatJuta(data.ceiling)}
           </dd>
         </div>
         <div>
           <dt className="mb-1 text-[13px] text-muted">With salary listed</dt>
-          <dd className="text-[16px] font-[480] tabular-nums sm:text-[18px]">{data.withSalary}</dd>
+          <dd className="text-[16px] font-medium tabular-nums sm:text-[18px]">{data.withSalary}</dd>
         </div>
       </dl>
       <ul className="flex flex-col gap-3">
@@ -294,11 +294,11 @@ export function JobRow({ job }: { job: Job }) {
           highlightId === job.id && 'bg-accent-soft',
         )}
       >
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[14px] font-[480] text-accent" aria-hidden>
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[14px] font-medium text-accent" aria-hidden>
           {job.company.replace(/^PT\.?\s+/i, '').charAt(0)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[15px] font-[440]">{job.company}</span>
+          <span className="block truncate text-[14px] font-medium">{job.company}</span>
           <span className="block truncate text-[13px] text-muted">{job.position}</span>
         </span>
         <StatusPill status={job.status} auto={job.auto_ghosted && job.status === 'ghosted'} className="shrink-0" />

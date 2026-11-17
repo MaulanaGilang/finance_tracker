@@ -102,7 +102,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-[480] text-muted">Status</span>
+            <span className="text-[13px] font-medium text-muted">Status</span>
             <Segmented
               label="Status"
               value={status}
@@ -119,7 +119,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
               <input id="m-last" inputMode="decimal" value={lastRead} onChange={(e) => setLastRead(e.target.value)} placeholder="12" className={cx(inputClass, 'tabular-nums')} />
               {/* Only when the latest is ahead of you, and trusted (never moves you backwards) */}
               {editing?.latest_chapter != null && !editing.skip_check && (parseChapter(lastRead) ?? -1) < editing.latest_chapter && (
-                <Button type="button" variant="ghost" className="h-12 shrink-0 px-4 text-[14px]" onClick={() => setLastRead(chapterLabel(editing.latest_chapter))}>
+                <Button type="button" variant="ghost" className="h-11 shrink-0 px-4 text-[14px]" onClick={() => setLastRead(chapterLabel(editing.latest_chapter))}>
                   Caught up
                 </Button>
               )}
@@ -136,7 +136,13 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
 
         <MatchPanel manga={editing} title={title} pick={pick} onPick={setPick} />
 
-        {editing && status === 'reading' && !pick && (
+        {/* A finished series won't get new chapters: the weekly check leaves it alone once its last chapter is known */}
+        {editing && status === 'reading' && !pick && editing.series_status === 'completed' && editing.checked_at && !editing.skip_check && (
+          <p className="-mt-2 px-1 text-[13px] leading-[1.5] text-muted">
+            This series has ended, so the weekly check skips it. Use the refresh button above if a late translation comes out.
+          </p>
+        )}
+        {editing && status === 'reading' && !pick && !(editing.series_status === 'completed' && editing.checked_at && !editing.skip_check) && (
           <label className="-mt-2 flex cursor-pointer items-start gap-3 px-1 text-[14px] leading-[1.5]">
             <input type="checkbox" checked={track} onChange={(e) => setTrack(e.target.checked)} className="mt-1 size-4 accent-[var(--color-accent)]" />
             <span>
@@ -216,10 +222,10 @@ function MatchPanel({ manga, title, pick, onPick }: { manga: Manga | null; title
       <div className="flex items-start justify-between gap-3">
         {manga && !pick && <CoverThumb src={manga.cover_url} title={manga.title} />}
         <div className="min-w-0 flex-1 text-[14px] leading-[1.5]">
-          <p className="text-[13px] font-[480] text-muted">Latest chapter lookup</p>
+          <p className="text-[13px] font-medium text-muted">Latest chapter lookup</p>
           {pick ? (
             <p>
-              Will follow <span className="font-[480]">{pick.title}</span> on {SOURCE_LABEL[pick.source]}.{' '}
+              Will follow <span className="font-medium">{pick.title}</span> on {SOURCE_LABEL[pick.source]}.{' '}
               <button type="button" className="text-accent hover:underline" onClick={() => onPick(null)}>
                 Undo
               </button>
@@ -232,11 +238,11 @@ function MatchPanel({ manga, title, pick, onPick }: { manga: Manga | null; title
             <p className="text-expense">Couldn't find this series. Pick it below.</p>
           ) : manga.skip_check && manga.status === 'reading' ? (
             <p>
-              <span className="font-[480]">Not tracked.</span> <span className="text-muted">{notTrackedReason(manga)}. Pick the right series below to check it again.</span>
+              <span className="font-medium">Not tracked.</span> <span className="text-muted">{notTrackedReason(manga)}. Pick the right series below to check it again.</span>
             </p>
           ) : (
             <p>
-              <span className="font-[480]">{manga.matched_title ?? manga.title}</span>
+              <span className="font-medium">{manga.matched_title ?? manga.title}</span>
               <span className="text-muted">
                 {manga.latest_chapter != null && ` · ch. ${chapterLabel(manga.latest_chapter)}`}
                 {manga.latest_source && ` on ${latestFrom(manga)}`}
@@ -272,7 +278,7 @@ function MatchPanel({ manga, title, pick, onPick }: { manga: Manga | null; title
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), void search(query))}
               placeholder="Search by title"
-              className={cx(inputClass, 'h-11 pl-10 text-[15px]')}
+              className={cx(inputClass, 'h-11 pl-10 text-[14px]')}
             />
           </div>
           {busy && !results ? (

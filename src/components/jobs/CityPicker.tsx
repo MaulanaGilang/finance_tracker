@@ -110,7 +110,7 @@ export function CityPicker({ id, value, onChange }: { id: string; value: string;
                   pick(o.name)
                 }}
                 onMouseEnter={() => setActive(i)}
-                className={cx('flex cursor-pointer items-baseline justify-between gap-3 rounded-[10px] px-3 py-2 text-[14px]', i === active && 'bg-raised', o.name === value && 'font-[480] text-accent')}
+                className={cx('flex cursor-pointer items-baseline justify-between gap-3 rounded-[10px] px-3 py-2 text-[14px]', i === active && 'bg-raised', o.name === value && 'font-medium text-accent')}
               >
                 <span className="truncate">{o.name}</span>
                 <span className="shrink-0 text-[12px] text-muted">{o.province}</span>

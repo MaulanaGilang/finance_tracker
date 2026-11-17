@@ -668,7 +668,7 @@ export function Globe({
           ref={(n) => {
             labels.current[i] = n
           }}
-          className="pointer-events-none absolute left-0 top-0 flex items-center gap-1.5 whitespace-nowrap rounded-pill bg-card/90 py-1 pl-1 pr-2.5 text-[12px] font-[480] shadow-[0_4px_12px_rgba(0,0,0,0.4)] ring-1 backdrop-blur-md will-change-transform"
+          className="pointer-events-none absolute left-0 top-0 flex items-center gap-1.5 whitespace-nowrap rounded-pill bg-card/90 py-1 pl-1 pr-2.5 text-[12px] font-medium shadow-[0_4px_12px_rgba(0,0,0,0.4)] ring-1 backdrop-blur-md will-change-transform"
           style={{ opacity: 0, color: PLACE_COLORS[i % PLACE_COLORS.length], ['--tw-ring-color' as string]: `color-mix(in srgb, ${PLACE_COLORS[i % PLACE_COLORS.length]} 35%, transparent)` }}
           aria-hidden
         >

@@ -94,7 +94,7 @@ function Story({ a }: { a: NewsArticle }) {
             <ArrowLeft size={16} /> Back
           </button>
           <p className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
-            <span className="font-[480] text-ink">{a.source}</span>
+            <span className="font-medium text-ink">{a.source}</span>
             <span>{timeAgo(a.published_at)}</span>
             {minutes && (
               <span className="inline-flex items-center gap-1">
@@ -102,7 +102,7 @@ function Story({ a }: { a: NewsArticle }) {
               </span>
             )}
           </p>
-          <h1 className="mb-4 text-balance font-display text-[24px] leading-[1.22] sm:text-[28px]">{a.title}</h1>
+          <h1 className="mb-4 text-balance font-display text-[24px] leading-[1.22] sm:text-[32px]">{a.title}</h1>
           <div className="mb-5 flex flex-wrap items-center gap-1.5">
             {isHighImpact(a) && <ImpactBadge />}
             {a.topics.map((t) => (
@@ -124,14 +124,14 @@ function Story({ a }: { a: NewsArticle }) {
                   key={i}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT, delay: 0.1 + Math.min(i, 5) * 0.06 } }}
-                  className={cx('text-pretty leading-[1.7]', i === 0 ? 'text-[16px] text-ink sm:text-[17px]' : 'text-[15px] text-ink/85 sm:text-[16px]')}
+                  className={cx('text-pretty leading-[1.7]', i === 0 ? 'text-[16px] text-ink sm:text-[16px]' : 'text-[14px] text-ink/85 sm:text-[16px]')}
                 >
                   {p}
                 </motion.p>
               ))}
             </div>
           ) : (
-            <p className="text-[15px] leading-[1.6] text-muted">This site doesn't allow previews (paywall or blocked), so there's nothing to show here. The full story is on {a.source}.</p>
+            <p className="text-[14px] leading-[1.6] text-muted">This site doesn't allow previews (paywall or blocked), so there's nothing to show here. The full story is on {a.source}.</p>
           )}
 
           {a.details_status === 'failed' && paragraphs.length > 0 && (
@@ -177,7 +177,7 @@ function PlaceChips({ places, focus, globe }: { places: Place[]; focus: number; 
               key={p.code}
               onClick={() => globe.current?.flyTo(i)}
               aria-pressed={active}
-              className="relative inline-flex h-9 shrink-0 items-center gap-2 rounded-pill pl-1.5 pr-3 text-[13px] font-[480] transition-transform active:scale-[0.97]"
+              className="relative inline-flex h-9 shrink-0 items-center gap-2 rounded-pill pl-1.5 pr-3 text-[13px] font-medium transition-transform active:scale-[0.97]"
               style={{ color }}
             >
               {active && <motion.span layoutId="place-pill" transition={pillSpring} className="absolute inset-0 rounded-pill" style={{ background: `color-mix(in srgb, ${color} 12%, transparent)` }} />}

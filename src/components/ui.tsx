@@ -16,8 +16,8 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 const variants: Record<Variant, string> = {
   primary: 'glow-button',
   secondary: 'bg-raised text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_0_0_1px_rgb(255_255_255/0.06)] hover:bg-[#18191b]',
-  ghost: 'border border-line-strong text-ink hover:bg-raised',
-  danger: 'border border-line-strong text-expense hover:bg-expense/10',
+  ghost: 'border border-slate text-ink hover:bg-raised',
+  danger: 'border border-slate text-expense hover:bg-expense/10',
 }
 
 export function Button({
@@ -30,7 +30,8 @@ export function Button({
     <button
       {...rest}
       className={cx(
-        'inline-flex h-11 select-none items-center justify-center gap-2 whitespace-nowrap rounded-pill px-5 text-[15px] font-[440] transition-[background-color,box-shadow,transform] duration-200 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
+        // 13-14px / 500, 8px radius, 16px side padding (taller than Raycast's 8px vertical so it's easy to tap)
+        'inline-flex h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-pill px-4 text-[14px] font-medium transition-[background-color,box-shadow,transform] duration-200 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
         variants[variant],
         className,
       )}
@@ -65,13 +66,14 @@ export function IconButton({
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   // min-w-0 lets cards shrink inside grid tracks instead of stretching to fit chart content
-  return <section className={cx('frost min-w-0 rounded-card p-5 sm:p-7', className)}>{children}</section>
+  // 16px radius, 24px padding (16px on phones), on the 8px grid
+  return <section className={cx('frost min-w-0 rounded-card p-4 sm:p-6', className)}>{children}</section>
 }
 
 export function CardTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="mb-5 flex items-center justify-between gap-3">
-      <h2 className="text-[15px] font-[480] text-ink">{children}</h2>
+      <h2 className="text-[14px] font-medium text-ink">{children}</h2>
       {action}
     </div>
   )
@@ -80,7 +82,7 @@ export function CardTitle({ children, action }: { children: ReactNode; action?: 
 export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <header className="mb-6 flex flex-wrap items-center justify-between gap-4 sm:mb-8">
-      <h1 className="font-display text-[28px] leading-[1.2] sm:text-[32px]">{title}</h1>
+      <h1 className="font-display text-[24px] leading-[1.2] sm:text-[32px]">{title}</h1>
       {children}
     </header>
   )
@@ -140,7 +142,7 @@ export function MonthStepper({ value, onChange }: { value: string; onChange: (k:
       <IconButton label="Previous month" className="size-9" onClick={() => onChange(addMonths(value, -1))}>
         <CaretLeft size={16} />
       </IconButton>
-      <span className="min-w-[132px] text-center text-[14px] font-[480] tabular-nums">{monthLabel(value)}</span>
+      <span className="min-w-[132px] text-center text-[14px] font-medium tabular-nums">{monthLabel(value)}</span>
       <IconButton
         label="Next month"
         className="size-9"
@@ -158,7 +160,7 @@ export function MonthStepper({ value, onChange }: { value: string; onChange: (k:
 export function Field({ label, htmlFor, children, hint }: { label: string; htmlFor: string; children: ReactNode; hint?: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={htmlFor} className="text-[13px] font-[480] text-muted">
+      <label htmlFor={htmlFor} className="text-[13px] font-medium text-muted">
         {label}
       </label>
       {children}
@@ -167,9 +169,9 @@ export function Field({ label, htmlFor, children, hint }: { label: string; htmlF
   )
 }
 
-// Inset well you can type into: a faint white tint recessed into the dark surface
+// Inset well you can type into: 8px radius, white 5% fill, 12px side padding, 16px white text, Ash placeholder
 export const inputClass =
-  'h-12 w-full rounded-[10px] border border-white/[0.07] bg-white/[0.04] px-4 text-[16px] text-ink placeholder:text-faint focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-accent/15'
+  'h-11 w-full rounded-[8px] border border-transparent bg-white/[0.05] px-3 text-[16px] text-ink placeholder:text-muted focus:border-white/25 focus:bg-white/[0.07] focus:outline-none'
 
 export const selectClass = inputClass + ' appearance-none pr-10 bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 256 256%27%3E%3Cpath fill=%27%239c9c9d%27 d=%27M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z%27/%3E%3C/svg%3E")] bg-[length:12px] bg-[right_1.1rem_center] bg-no-repeat'
 
@@ -205,7 +207,7 @@ export function Delta({ value, goodWhenUp = true, onDark = false }: { value: num
   const good = up === goodWhenUp
   const color = onDark ? (good ? 'text-income' : 'text-expense') : good ? 'text-income' : 'text-expense'
   return (
-    <span className={cx('text-[12px] font-[480] tabular-nums', color)}>
+    <span className={cx('text-[12px] font-medium tabular-nums', color)}>
       {up ? '▲' : '▼'} {Math.abs(value * 100).toFixed(1)}%
     </span>
   )
@@ -214,7 +216,7 @@ export function Delta({ value, goodWhenUp = true, onDark = false }: { value: num
 export function Empty({ title, body, action }: { title: string; body?: string; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
-      <p className="text-[15px] font-[480]">{title}</p>
+      <p className="text-[14px] font-medium">{title}</p>
       {body && <p className="max-w-[34ch] text-[14px] leading-[1.5] text-muted">{body}</p>}
       {action && <div className="mt-3">{action}</div>}
     </div>

@@ -36,7 +36,7 @@ export function WeeklyChart({ data }: { data: { key: string; label: string; coun
             content={({ active, payload }) =>
               active && payload?.length ? (
                 <div className="frost rounded-[12px] px-3.5 py-2.5 text-[13px]">
-                  <p className="font-[480]">Week of {String((payload[0].payload as { label: string }).label)}</p>
+                  <p className="font-medium">Week of {String((payload[0].payload as { label: string }).label)}</p>
                   <p className="tabular-nums text-muted">
                     {Number(payload[0].value)} {Number(payload[0].value) === 1 ? 'application' : 'applications'}
                   </p>
@@ -80,7 +80,7 @@ export function BreakdownBars({
   return (
     <ul className="flex flex-col gap-3.5">
       {showResponse && (
-        <li className="-mb-1 flex justify-end gap-4 text-[12px] font-[480] text-muted">
+        <li className="-mb-1 flex justify-end gap-4 text-[12px] font-medium text-muted">
           <span className="w-10 text-right">Sent</span>
           <span className="w-[4.5rem] text-right">Replied</span>
         </li>

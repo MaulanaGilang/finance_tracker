@@ -118,7 +118,7 @@ export function Reports() {
           <Empty title={`No ${breakdownType === 'expense' ? 'expenses' : 'income'} in this period`} />
         ) : (
           <div className="flex flex-col gap-1">
-            <div className="hidden grid-cols-[1fr_140px_70px_110px] gap-4 px-1 pb-2 text-[12px] font-[480] text-muted sm:grid">
+            <div className="hidden grid-cols-[1fr_140px_70px_110px] gap-4 px-1 pb-2 text-[12px] font-medium text-muted sm:grid">
               <span>Category</span>
               <span className="text-right">Amount</span>
               <span className="text-right">Share</span>
@@ -127,14 +127,14 @@ export function Reports() {
             {report.slices.map((s) => (
               <div key={s.id} className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-[10px] px-1 py-2.5 sm:grid-cols-[1fr_140px_70px_110px]">
                 <div className="flex min-w-0 flex-col gap-1.5">
-                  <span className="flex items-center gap-2.5 text-[15px]">
+                  <span className="flex items-center gap-2.5 text-[14px]">
                     <span className="size-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
                     <span className="truncate">{s.name}</span>
                   </span>
                   {/* share bar with no background track */}
                   <span className="ml-5 block h-1 rounded-full" style={{ width: `${Math.max(2, s.share * 100)}%`, background: s.color, opacity: 0.85 }} />
                 </div>
-                <span className="text-right text-[15px] tabular-nums">{formatIDR(s.amount)}</span>
+                <span className="text-right text-[14px] tabular-nums">{formatIDR(s.amount)}</span>
                 <span className="hidden text-right text-[14px] tabular-nums text-muted sm:block">{(s.share * 100).toFixed(1)}%</span>
                 <span className="col-span-2 flex justify-end gap-3 text-right sm:col-span-1 sm:block">
                   <span className="text-[13px] tabular-nums text-muted sm:hidden">{(s.share * 100).toFixed(1)}%</span>
@@ -169,7 +169,7 @@ function Summary({
   return (
     <div className="border-b border-line p-5 last:border-b-0 sm:border-b-0 sm:p-7">
       <p className="mb-2 text-[14px] text-muted">{label}</p>
-      <AnimatedMoney value={value} signed className={cx('mb-2 block font-display text-[24px] sm:text-[28px]', className)} />
+      <AnimatedMoney value={value} signed className={cx('mb-2 block font-display text-[24px] sm:text-[32px]', className)} />
       <p className="flex flex-wrap items-center gap-1.5">
         <Delta value={delta} goodWhenUp={goodWhenUp} />
         {delta !== null && <span className="text-[12px] text-muted">vs {vs}</span>}
@@ -207,7 +207,7 @@ function YearView() {
             <IconButton label="Previous year" className="size-9" onClick={() => setYear((y) => y - 1)}>
               <CaretLeft size={16} />
             </IconButton>
-            <span className="w-12 text-center text-[14px] font-[480] tabular-nums">{year}</span>
+            <span className="w-12 text-center text-[14px] font-medium tabular-nums">{year}</span>
             <IconButton label="Next year" className="size-9" disabled={year >= thisYear} onClick={() => setYear((y) => y + 1)}>
               <CaretRight size={16} />
             </IconButton>
@@ -236,7 +236,7 @@ function YearStat({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <dt className="mb-1 text-[13px] text-muted">{label}</dt>
-      <dd className="text-[16px] font-[480] tabular-nums sm:text-[18px]">{formatIDR(value)}</dd>
+      <dd className="text-[16px] font-medium tabular-nums sm:text-[18px]">{formatIDR(value)}</dd>
     </div>
   )
 }

@@ -424,14 +424,18 @@ Deno.serve(async (req) => {
       return json({ tried: rows?.length ?? 0, found, remaining: count ?? 0 })
     }
 
-    // Weekly batch: titles you're reading that weren't checked in the last few days (flagged ones are skipped)
+    // Weekly batch: titles you're reading that weren't checked in the last few days. Skipped: titles you finished
+    // (status completed), flagged ones, and series that have ended once their last chapter is known (no new chapters
+    // will come; a finished series never checked yet still gets its one check).
     const since = new Date(Date.now() - RECHECK_DAYS * 864e5).toISOString()
+    const stale = `or(checked_at.is.null,checked_at.lt.${since})`
+    const due = `and(series_status.is.null,${stale}),and(series_status.neq.completed,${stale}),and(series_status.eq.completed,checked_at.is.null)`
     const { data: rows, error } = await db
       .from('manga_titles')
       .select(COLS)
       .eq('status', 'reading')
       .eq('skip_check', false)
-      .or(`checked_at.is.null,checked_at.lt.${since}`)
+      .or(due)
       .order('checked_at', { ascending: true, nullsFirst: true })
       .limit(BATCH)
     if (error) throw error
@@ -448,7 +452,7 @@ Deno.serve(async (req) => {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'reading')
       .eq('skip_check', false)
-      .or(`checked_at.is.null,checked_at.lt.${since}`)
+      .or(due)
     return json({ checked: rows?.length ?? 0, ...tally, remaining: count ?? 0 })
   } catch (e) {
     console.error(e)

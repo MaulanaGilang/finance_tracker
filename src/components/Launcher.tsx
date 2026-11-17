@@ -130,7 +130,7 @@ export function Launcher() {
             initial={{ opacity: 0, scale: 0.97, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 520, damping: 36 } }}
             exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.12 } }}
-            className="relative w-full max-w-[640px] overflow-hidden rounded-[16px] bg-[#0b0c0e]/95 shadow-[rgb(0_0_0/0.5)_0_30px_60px,rgb(255_255_255/0.08)_0_1px_0_inset,rgb(255_255_255/0.1)_0_0_0_1px] backdrop-blur-2xl"
+            className="relative w-full max-w-[640px] overflow-hidden elevated rounded-[16px] bg-[#07080a]/95 backdrop-blur-2xl"
           >
             <div className="flex items-center gap-3 border-b border-line px-4">
               <MagnifyingGlass size={18} className="shrink-0 text-faint" />

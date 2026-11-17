@@ -9,7 +9,7 @@ export function TopicTag({ topic, className }: { topic: NewsTopic; className?: s
   const { short, color } = TOPICS[topic]
   return (
     <span
-      className={cx('inline-flex h-6 items-center rounded-pill px-2.5 text-[11px] font-[480]', className)}
+      className={cx('inline-flex h-6 items-center rounded-pill px-2.5 text-[11px] font-medium', className)}
       style={{ background: `color-mix(in srgb, ${color} 22%, transparent)`, color: `color-mix(in srgb, ${color} 55%, #ffffff)` }}
     >
       {short}
@@ -19,7 +19,7 @@ export function TopicTag({ topic, className }: { topic: NewsTopic; className?: s
 
 export function ImpactBadge() {
   return (
-    <span className="inline-flex h-6 items-center gap-1 rounded-pill bg-accent px-2.5 text-[11px] font-[480] text-canvas" title="Mentions several market-moving terms">
+    <span className="inline-flex h-6 items-center gap-1 rounded-pill bg-accent px-2.5 text-[11px] font-medium text-canvas" title="Mentions several market-moving terms">
       <TrendUp size={12} weight="bold" /> Market mover
     </span>
   )
@@ -38,13 +38,13 @@ export function ArticleRow({ article, index = 0, compact = false }: { article: N
       <div className="flex gap-3">
         <div className="min-w-0 flex-1">
           <p className="mb-1.5 flex flex-wrap items-center gap-x-2 text-[12px] text-muted">
-            <span className="font-[480] text-ink">{article.source}</span>
+            <span className="font-medium text-ink">{article.source}</span>
             <span>{timeAgo(article.published_at)}</span>
           </p>
           {/* Opens the in-app reader (key points); the original link lives inside it */}
           <button
             onClick={() => openArticle(article)}
-            className="block text-left text-[15px] font-[480] leading-[1.35] text-ink decoration-accent/40 underline-offset-4 hover:underline sm:text-[16px]"
+            className="block text-left text-[14px] font-medium leading-[1.35] text-ink decoration-accent/40 underline-offset-4 hover:underline sm:text-[16px]"
           >
             {article.title}
             <ArrowUpRight size={13} className="ml-1 inline -translate-y-px text-muted opacity-0 transition-opacity group-hover:opacity-100" />

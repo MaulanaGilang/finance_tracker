@@ -55,7 +55,7 @@ export function Intro() {
               />
             </svg>
             <motion.span
-              className="font-display text-[26px]"
+              className="font-display text-[24px]"
               initial={{ opacity: 0, x: -6, filter: 'blur(8px)' }}
               animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
               transition={{ duration: 0.6, delay: 0.3, ease: EASE_OUT }}

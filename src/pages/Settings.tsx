@@ -112,7 +112,7 @@ function CategoryManager({ type }: { type: TxType }) {
           ) : (
             <li key={c.id} className="flex items-center gap-3 py-1.5">
               <span className="size-3 shrink-0 rounded-full" style={{ background: c.color }} />
-              <span className="flex-1 truncate text-[15px]">{c.name}</span>
+              <span className="flex-1 truncate text-[14px]">{c.name}</span>
               <IconButton label={`Edit ${c.name}`} onClick={() => setEditing(c)}>
                 <PencilSimple size={17} />
               </IconButton>
@@ -169,7 +169,7 @@ function CategoryForm({
         <input id={id} autoFocus value={name} maxLength={40} onChange={(e) => setName(e.target.value)} className={inputClass} />
       </Field>
       <fieldset>
-        <legend className="mb-2 text-[13px] font-[480] text-muted">Colour</legend>
+        <legend className="mb-2 text-[13px] font-medium text-muted">Colour</legend>
         <div className="flex flex-wrap gap-2">
           {SWATCHES[type].map((s) => (
             <button

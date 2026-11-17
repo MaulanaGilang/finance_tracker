@@ -42,12 +42,12 @@ export function StatusPill({ status, auto = false, className }: { status: JobSta
   const { label, color } = STATUS[status]
   return (
     <span
-      className={cx('inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-pill pl-2 pr-2.5 text-[13px] font-[440]', className)}
+      className={cx('inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-pill pl-2 pr-2.5 text-[13px] font-medium', className)}
       style={{ background: `color-mix(in srgb, ${color} 22%, transparent)`, color: `color-mix(in srgb, ${color} 55%, #ffffff)` }}
     >
       <StatusRing status={status} size={14} />
       {label}
-      {auto && <span className="rounded-[4px] bg-[#1b1c1e] px-1.5 text-[10px] font-[480] uppercase tracking-wide text-muted">auto</span>}
+      {auto && <span className="rounded-[4px] bg-[#1b1c1e] px-1.5 text-[10px] font-medium uppercase tracking-wide text-muted">auto</span>}
     </span>
   )
 }

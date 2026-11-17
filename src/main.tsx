@@ -83,7 +83,7 @@ function ToolLayout({ tool }: { tool: Tool }) {
       {loadError && (
         <div role="alert" className="mb-6 flex items-center justify-between gap-4 rounded-card border border-expense/30 bg-expense/5 px-5 py-3 text-[14px] text-expense">
           {loadError}
-          <button className="font-[480] underline" onClick={() => reload()}>
+          <button className="font-medium underline" onClick={() => reload()}>
             Retry
           </button>
         </div>

@@ -75,7 +75,7 @@ function Sentiment({ fg }: { fg: FearGreed }) {
   return (
     <div>
       <p className="mb-2 text-[13px] text-muted">Fear & Greed</p>
-      <p className="font-display text-[28px] leading-[1.15] tabular-nums">{fg.value}</p>
+      <p className="font-display text-[24px] leading-[1.15] tabular-nums">{fg.value}</p>
       <p className="mb-3 text-[14px]">{fg.label}</p>
       <div className="relative h-1.5 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-expense), var(--color-line-strong), var(--color-income))' }} role="img" aria-label={`${fg.value} out of 100, ${fg.label}`}>
         <span className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-ink" style={{ left: `${fg.value}%` }} />
@@ -91,7 +91,7 @@ function CoinTile({ coin }: { coin: Coin }) {
       <p className="mb-2 text-[13px] text-muted">
         {coin.name} <span className="text-muted/80">{coin.symbol}</span>
       </p>
-      <p className="font-display text-[28px] leading-[1.15] tabular-nums">{formatUsd(coin.usd)}</p>
+      <p className="font-display text-[24px] leading-[1.15] tabular-nums">{formatUsd(coin.usd)}</p>
       {coin.idr !== null && <p className="truncate text-[13px] tabular-nums text-muted">{formatIDR(coin.idr)}</p>}
       <p className="mt-1 flex flex-wrap gap-x-3 text-[13px]">
         <Change value={coin.change24h} suffix="24h" />
@@ -135,7 +135,7 @@ function MarketTile({ market }: { market: Market }) {
   return (
     <div className="sm:col-span-2 lg:col-span-1">
       <p className="mb-2 text-[13px] text-muted">Whole market</p>
-      <p className="font-display text-[28px] leading-[1.15] tabular-nums">{formatUsdCompact(market.capUsd)}</p>
+      <p className="font-display text-[24px] leading-[1.15] tabular-nums">{formatUsdCompact(market.capUsd)}</p>
       <p className="mt-1 text-[13px]">
         <Change value={market.capChange24h} suffix="24h" />
       </p>

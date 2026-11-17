@@ -13,7 +13,7 @@ const TICK = { fill: '#6a6b6c', fontSize: 12 }
 function TooltipBox({ title, rows }: { title: string; rows: { label: string; value: number; color: string }[] }) {
   return (
     <div className="frost rounded-[12px] px-3.5 py-2.5 text-[13px]">
-      <p className="mb-1.5 font-[480]">{title}</p>
+      <p className="mb-1.5 font-medium">{title}</p>
       {rows.map((r) => (
         <p key={r.label} className="flex items-center gap-2 tabular-nums">
           <span className="size-2 rounded-full" style={{ background: r.color }} />
@@ -157,7 +157,7 @@ export function CategoryDonut({ data, total }: { data: CategorySlice[]; total: n
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-[12px] text-muted">Total spent</span>
-        <span className="font-display text-[17px] tabular-nums">{formatCompact(total)}</span>
+        <span className="font-display text-[16px] tabular-nums">{formatCompact(total)}</span>
       </div>
     </motion.div>
   )
