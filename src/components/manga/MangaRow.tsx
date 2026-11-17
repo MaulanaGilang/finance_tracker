@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { ArrowSquareOut, Check, EyeSlash } from '@phosphor-icons/react'
-import { SOURCE_LABEL, chapterLabel, notTrackedReason, readUrl, seriesStatusLabel, unreadLabel, type Manga } from '../../lib/manga'
+import { chapterLabel, latestFrom, notTrackedReason, readUrl, seriesStatusLabel, unreadLabel, type Manga } from '../../lib/manga'
 import { EASE_OUT } from '../../lib/motion'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
@@ -86,7 +86,7 @@ export function Latest({ manga }: { manga: Manga }) {
       </span>
     )
   return (
-    <span className="inline-flex items-center gap-2" title={manga.latest_source ? `From ${SOURCE_LABEL[manga.latest_source]}` : undefined}>
+    <span className="inline-flex items-center gap-2" title={manga.latest_source ? `From ${latestFrom(manga)}` : undefined}>
       {badge && <span className="rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] text-canvas">{badge}</span>}
       <span className="tabular-nums">{chapterLabel(manga.latest_chapter)}</span>
     </span>

@@ -75,22 +75,57 @@ interface Store {
 const sortManga = (list: Manga[]) => [...list].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
 
 const TOKEN_KEY = 'ledger.session'
+const ACTIVE_KEY = 'ledger.lastActive'
+/** No taps, clicks, keys or scrolling for this long and the app locks itself */
+export const IDLE_LOCK_MS = 5 * 60_000
 const Ctx = createContext<Store | null>(null)
 
+// The session lives in sessionStorage: it survives a reload of the same tab, but a new visit
+// (a new tab, or the app reopened after being closed) always starts at the PIN screen.
+const store = {
+  get: (k: string) => {
+    try {
+      return sessionStorage.getItem(k)
+    } catch {
+      return null
+    }
+  },
+  set: (k: string, v: string | null) => {
+    try {
+      if (v) sessionStorage.setItem(k, v)
+      else sessionStorage.removeItem(k)
+    } catch {
+      /* storage unavailable: the session lasts until this page is reloaded */
+    }
+  },
+}
+const markActive = () => store.set(ACTIVE_KEY, String(Date.now()))
+const idleFor = () => Date.now() - Number(store.get(ACTIVE_KEY) ?? 0)
+
+/** The token to resume with, or null when this visit has to unlock first */
 const readToken = () => {
+  // Sessions used to be kept for good in localStorage: end any left there
   try {
-    return localStorage.getItem(TOKEN_KEY)
+    const old = localStorage.getItem(TOKEN_KEY)
+    if (old) {
+      localStorage.removeItem(TOKEN_KEY)
+      api.logout(old).catch(() => {})
+    }
   } catch {
+    /* storage unavailable */
+  }
+  const t = store.get(TOKEN_KEY)
+  if (t && idleFor() > IDLE_LOCK_MS) {
+    // Reopened after being away too long: this session is over
+    store.set(TOKEN_KEY, null)
+    api.logout(t).catch(() => {})
     return null
   }
+  return t
 }
 const writeToken = (t: string | null) => {
-  try {
-    if (t) localStorage.setItem(TOKEN_KEY, t)
-    else localStorage.removeItem(TOKEN_KEY)
-  } catch {
-    /* storage unavailable: session lasts for this tab only */
-  }
+  store.set(TOKEN_KEY, t)
+  if (t) markActive()
 }
 
 const isSessionError = (e: unknown) => e instanceof ApiError && e.message.includes('invalid_session')
@@ -132,6 +167,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setManga([])
     setLeads([])
     setLeadsInfo(null)
+    setNews([])
+    setReviews([])
     try {
       setStatus((await api.pinIsSet()) ? 'locked' : 'setup')
     } catch {
@@ -200,6 +237,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     // run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Auto-lock: any tap, click, key or scroll counts as activity; checked on a timer and whenever
+  // the tab comes back to the front (timers barely run while a phone app sits in the background)
+  useEffect(() => {
+    if (isDemo || status !== 'ready' || !token) return
+    let last = 0
+    const onActivity = () => {
+      const now = Date.now()
+      if (now - last < 5000) return
+      last = now
+      markActive()
+    }
+    const check = () => {
+      if (idleFor() <= IDLE_LOCK_MS) return
+      api.logout(token).catch(() => {})
+      void resetToLock()
+    }
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') check()
+    }
+    const events = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'] as const
+    events.forEach((e) => window.addEventListener(e, onActivity, { passive: true, capture: true }))
+    document.addEventListener('visibilitychange', onVisible)
+    const timer = setInterval(check, 15_000)
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, onActivity, { capture: true }))
+      document.removeEventListener('visibilitychange', onVisible)
+      clearInterval(timer)
+    }
+  }, [status, token, resetToLock])
 
   /** Wrap a mutation so an expired session drops back to the PIN screen */
   const guarded = useCallback(

@@ -4,7 +4,7 @@ import { ArrowRight } from '@phosphor-icons/react'
 import { CoverHover } from '../../components/manga/CoverHover'
 import { CaughtUpButton, OpenLink } from '../../components/manga/MangaRow'
 import { Button, Card, CardTitle, Empty, PageHeader, Skeleton } from '../../components/ui'
-import { SOURCE_LABEL, chapterLabel, hasNew, lastChecked, mangaKpis, notTrackedReason, unread, unreadLabel, type Manga } from '../../lib/manga'
+import { chapterLabel, latestFrom, hasNew, lastChecked, mangaKpis, notTrackedReason, unread, unreadLabel, type Manga } from '../../lib/manga'
 import { itemVariants, listVariants } from '../../lib/motion'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
@@ -133,7 +133,7 @@ function FreshRow({ manga }: { manga: Manga }) {
           </p>
           <p className="truncate text-[13px] tabular-nums text-muted">
             Ch. {chapterLabel(manga.last_read ?? 0)} → {chapterLabel(manga.latest_chapter)}
-            {manga.latest_source && ` · ${SOURCE_LABEL[manga.latest_source]}`}
+            {manga.latest_source && ` · ${latestFrom(manga)}`}
           </p>
         </div>
         <CaughtUpButton manga={manga} />

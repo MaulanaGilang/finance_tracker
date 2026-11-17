@@ -2,7 +2,7 @@ import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { ArrowSquareOut, ArrowsClockwise, MagnifyingGlass } from '@phosphor-icons/react'
 import { api, friendlyError } from '../../lib/api'
-import { SOURCE_LABEL, capitalizeFirst, chapterLabel, notTrackedReason, seriesStatusLabel, type Manga, type MangaCandidate, type MangaStatus } from '../../lib/manga'
+import { SOURCE_LABEL, capitalizeFirst, chapterLabel, latestFrom, notTrackedReason, seriesStatusLabel, type Manga, type MangaCandidate, type MangaStatus } from '../../lib/manga'
 import { isDemo } from '../../lib/demo'
 import { timeAgo } from '../../lib/news'
 import { useStore } from '../../lib/store'
@@ -53,6 +53,8 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
     if (ch !== null && (!Number.isFinite(ch) || ch < 0)) return setError('Last read should be a chapter number, like 12 or 61.5.')
     setBusy(true)
     setError(null)
+    // A new or changed link is a new place to read the latest chapter from: check it again
+    const linkChanged = !!editing && link.trim() !== (editing.link ?? '')
     try {
       const saved = await saveManga({
         id: editing?.id,
@@ -61,7 +63,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
         last_read: ch,
         link: link.trim(),
         notes,
-        ...(editing && { skip_check: !track }),
+        ...(editing && { skip_check: linkChanged && link.trim() ? false : !track }),
         ...(pick && {
           mangadex_id: pick.source === 'mangadex' ? pick.id : null,
           mu_id: pick.source === 'mangaupdates' ? pick.id : null,
@@ -70,8 +72,8 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
         }),
       })
       onClose()
-      // New titles, renamed ones and new matches get their latest chapter straight away
-      const needsCheck = !editing || pick || capitalizeFirst(title.trim()) !== editing.title || (track && editing.skip_check)
+      // New titles, renamed ones, new links and new matches get their latest chapter straight away
+      const needsCheck = !editing || pick || linkChanged || capitalizeFirst(title.trim()) !== editing.title || (track && editing.skip_check)
       if (needsCheck && saved.status === 'reading') checkManga(saved.id).catch(() => {})
     } catch (err) {
       setError(friendlyError(err))
@@ -125,7 +127,7 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
 
-        <Field label="Where you read it (optional)" htmlFor="m-link">
+        <Field label="Where you read it (optional)" htmlFor="m-link" hint="The series page. The latest chapter is read from here first, then MangaDex and MangaUpdates if the site can't be read.">
           <input id="m-link" type="url" inputMode="url" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" className={inputClass} />
         </Field>
         <Field label="Notes (optional)" htmlFor="m-notes">
@@ -237,7 +239,7 @@ function MatchPanel({ manga, title, pick, onPick }: { manga: Manga | null; title
               <span className="font-[480]">{manga.matched_title ?? manga.title}</span>
               <span className="text-muted">
                 {manga.latest_chapter != null && ` · ch. ${chapterLabel(manga.latest_chapter)}`}
-                {manga.latest_source && ` on ${SOURCE_LABEL[manga.latest_source]}`}
+                {manga.latest_source && ` on ${latestFrom(manga)}`}
                 {status && ` · ${status}`}
                 {manga.checked_at && ` · checked ${timeAgo(manga.checked_at)}`}
                 {manga.check_status === 'failed' && ' · last check failed'}

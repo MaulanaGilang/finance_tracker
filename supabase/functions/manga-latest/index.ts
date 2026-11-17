@@ -1,9 +1,12 @@
-// Latest chapter for each comic you're reading (manga, manhwa, webtoon), from two public APIs (no scraping, no accounts):
+// Latest chapter for each comic you're reading (manga, manhwa, webtoon).
+// First choice: the page in the title's own link ("Where you read it"), see link.ts.
+// When there's no link, or its site can't be read, two public APIs (no accounts):
 //   MangaDex     - newest chapter in any language
 //   MangaUpdates - newest release it tracks (covers series MangaDex doesn't host)
 // The higher of the two wins. Runs weekly from pg_cron in batches; the app can also check one title or search.
 // Covers come from the same two sources (MangaDex's main cover, else MangaUpdates' series image), copied to Storage.
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2'
+import { idsFromLink, scrapeLatest, type LinkLatest } from './link.ts'
 
 const MD = 'https://api.mangadex.org'
 const MU = 'https://api.mangaupdates.com/v1'
@@ -193,6 +196,7 @@ type Row = {
   matched_title: string | null
   match_locked: boolean
   last_read: number | string | null
+  link: string | null
   cover_url: string | null
   cover_source: string | null
 }
@@ -228,8 +232,64 @@ async function findMatch(title: string) {
   return { mangadex_id, mu_id, matched_title }
 }
 
-/** Find (or reuse) the match for one title and read its latest chapter */
+/** Latest chapter straight from the title's own link, through the site's API when it's MangaDex or MangaUpdates */
+async function latestFromLink(link: string): Promise<LinkLatest | null> {
+  const ids = idsFromLink(link)
+  if (ids.mangadex_id) {
+    const top = await mdLatest(ids.mangadex_id)
+    return top ? { ...top, source: 'mangadex' } : null
+  }
+  if (ids.mu_id) {
+    const s = await muSeries(ids.mu_id)
+    return s.latest_chapter ? { chapter: s.latest_chapter, url: s.url, source: 'mangaupdates' } : null
+  }
+  return scrapeLatest(link)
+}
+
+/**
+ * One title: your link first; MangaDex and MangaUpdates are still asked (for the cover and series status,
+ * and as the fallback when the link can't be read or shows a chapter below where you are).
+ */
 async function checkTitle(row: Row) {
+  // A MangaDex or MangaUpdates link says exactly which series it is: it beats a guessed match (not one you picked by hand)
+  const linkIds = row.match_locked ? {} : idsFromLink(row.link)
+  const base: Row = { ...row }
+  if (linkIds.mangadex_id && linkIds.mangadex_id !== row.mangadex_id) Object.assign(base, { mangadex_id: linkIds.mangadex_id, mu_id: null, matched_title: null })
+  if (linkIds.mu_id && linkIds.mu_id !== row.mu_id) Object.assign(base, { mu_id: linkIds.mu_id, ...(!linkIds.mangadex_id && { mangadex_id: null }), matched_title: null })
+
+  const [viaLink, sources] = await Promise.all([
+    row.link
+      ? latestFromLink(row.link).catch((e) => {
+          console.error('link', row.title, e)
+          return null
+        })
+      : null,
+    checkSources(base).catch((e) => {
+      console.error('sources', row.title, e)
+      return null
+    }),
+  ])
+
+  const read = row.last_read == null ? null : Number(row.last_read)
+  // A number below where you've read means the page was misread: don't trust it
+  const linkOk = viaLink !== null && (read === null || viaLink.chapter >= read)
+  if (!linkOk) {
+    if (!sources) throw new Error('no source answered')
+    return sources
+  }
+  return {
+    cover_src: null,
+    ...(sources ?? {}),
+    latest_chapter: viaLink.chapter,
+    latest_source: viaLink.source,
+    latest_url: viaLink.url,
+    check_status: 'ok' as const,
+    skip_check: false,
+  }
+}
+
+/** Find (or reuse) the match for one title and read its latest chapter from MangaDex and MangaUpdates */
+async function checkSources(row: Row) {
   let { mangadex_id, mu_id, matched_title } = row
   const searched = !row.match_locked && !mangadex_id && !mu_id
 
@@ -293,7 +353,7 @@ async function checkAndSave(db: SupabaseClient, row: Row) {
   return data
 }
 
-const COLS = 'id, title, mangadex_id, mu_id, matched_title, match_locked, last_read, cover_url, cover_source'
+const COLS = 'id, title, mangadex_id, mu_id, matched_title, match_locked, last_read, link, cover_url, cover_source'
 
 /** Cover for one title, finding its series first if it has none yet (completed titles are never checked otherwise) */
 async function fillCover(db: SupabaseClient, row: Row) {
