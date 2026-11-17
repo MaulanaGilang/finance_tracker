@@ -33,7 +33,17 @@ export function plain(html: string | null | undefined) {
     .trim()
 }
 
-export type Lead = Job & { source: string; source_job_id: string; url: string | null; posted_at: string | null; description_read: boolean }
+export type Lead = Job & {
+  source: string
+  source_job_id: string
+  url: string | null
+  posted_at: string | null
+  description_read: boolean
+  /** From an alert email: posted_at is only the email's date until the job page confirms the real one */
+  date_from_email?: boolean
+  /** JobStreet marked the card "Baru diposting" (newly posted) */
+  listed_new?: boolean
+}
 
 // ---------------------------------------------------------------------------
 // Company job boards. Each returns Indonesia-located data jobs with their full description.
@@ -158,23 +168,38 @@ function linkedin(m: Mail): Lead[] {
     if (!title || !company) continue
     out.push({
       source: 'linkedin', source_job_id: view[1], title, company, location: location ?? null, url: `https://www.linkedin.com/jobs/view/${view[1]}/`,
-      description: null, description_read: false, posted_at: m.date,
+      description: null, description_read: false, posted_at: m.date, date_from_email: true,
     })
   }
   return out
 }
 
+// "Kandidat yang sangat kuat", "Kamu kandidat kuat": JobStreet's match badge, not the location
+const JS_BADGE = /kandidat|candidate/i
+const JS_LINK = /^\[(https?:[^\]]+)\]$/
+
 function jobstreet(m: Mail): Lead[] {
-  // Cards: "logo [link]  Title / Company  Location / (Rp pay)  [link]" (job alerts and "similar jobs" lists)
+  // Each card (job alerts and the "similar jobs" lists in application emails):
+  //   logo / [logo link] / Title / Company / (match badge) / Location / (Rp pay) / (perks) / (Baru diposting) / [job link]
+  // The first link only opens the company logo; the job is the second one.
   const out: Lead[] = []
-  const re = /logo\s*\n\s*\[(https?:[^\]]+)\]\s*\n\s*\n([^\n[]+)\n([^\n[]+)\n\s*\n([^\n[]+)\n(?:(Rp[^\n]*)\n)?/g
-  for (const c of m.body.matchAll(re)) {
-    const [title, company, location, pay] = [clean(c[2]), clean(c[3]), clean(c[4]), c[5] ? clean(c[5]) : '']
+  for (const chunk of m.body.split(/\n\s*logo\s*\n/).slice(1)) {
+    const lines = chunk.split('\n').map(clean).filter(Boolean)
+    const links = lines.map((l, i) => ({ i, url: JS_LINK.exec(l)?.[1] })).filter((x) => x.url)
+    if (links.length < 2) continue
+    const [logo, job] = links
+    const text = lines.slice(logo.i + 1, job.i).filter((l) => !/^https?:/.test(l))
+    const [title, company, ...rest] = text
     if (!title || !company) continue
+    const details = rest.filter((l) => !JS_BADGE.test(l) && !l.startsWith('* ') && !/^\*/.test(l))
+    const location = details.find((l) => !/^Rp\b|baru diposting|gaji profil/i.test(l)) ?? null
+    const pay = details.find((l) => /^Rp\b/.test(l))
     const salary = pay ? parseSalary(pay) : { min: null, max: null }
     out.push({
-      source: 'jobstreet', source_job_id: cardId(title, company), title, company, location, url: c[1],
-      salary_min: salary.min, salary_max: salary.max, description: null, description_read: false, posted_at: m.date,
+      // Stand-in id until the job page gives the real one (verifyLeads)
+      source: 'jobstreet', source_job_id: cardId(title, company), title, company, location, url: job.url!,
+      salary_min: salary.min, salary_max: salary.max, description: null, description_read: false,
+      posted_at: m.date, date_from_email: true, listed_new: rest.some((l) => /baru diposting/i.test(l)),
     })
   }
   return out
@@ -196,6 +221,99 @@ export function fromEmail(m: Mail): Lead[] {
   const from = m.from.toLowerCase()
   const leads = from.includes('linkedin.com') ? linkedin(m) : from.includes('jobstreet') ? jobstreet(m) : from.includes('glints') ? glints(m) : []
   return leads.filter((l) => isDataTitle(l.title))
+}
+
+// ---------------------------------------------------------------------------
+// Job pages, read without logging in. An alert email's date says nothing about when the job was posted
+// (a "similar jobs" list can carry a month-old job), so each job's own page gives the real date,
+// whether it's still open, and its full text for the rules.
+
+const BROWSER = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9,id;q=0.8',
+}
+const page = (url: string) => fetch(url, { headers: BROWSER, redirect: 'follow', signal: AbortSignal.timeout(15000) })
+
+type Checked = { lead: Lead; verdict: 'ok' | 'old' | 'closed' | 'unknown' }
+
+/** JobStreet: the email's tracking link leads to the job page, which has the exact listing time */
+async function checkJobstreet(l: Lead): Promise<Lead | 'closed' | null> {
+  const res = await page(l.url!)
+  const id = /jobstreet\.com\/(?:[a-z]{2}\/)?job\/(\d+)/.exec(res.url)?.[1]
+  if (!id) {
+    await res.body?.cancel()
+    return null
+  }
+  const clean = `https://id.jobstreet.com/id/job/${id}`
+  const found = { ...l, source_job_id: id, url: clean }
+  if (!res.ok) return found
+  const html = await res.text()
+  if (/"isExpired":true|"status":"Expired"/.test(html)) return 'closed'
+  const listed = /"listedAt":\{[^}]*?"dateTimeUtc":"([^"]+)"/.exec(html)?.[1]
+  // The job text block runs until the page's next marked section
+  const start = html.indexOf('data-automation="jobAdDetails"')
+  const end = start >= 0 ? html.indexOf('data-automation=', start + 40) : -1
+  const body = start >= 0 ? html.slice(start, end > start ? end : start + 30000) : ''
+  const description = plain(body.replace(/^[^>]*>/, ''))
+  return {
+    ...found,
+    ...(listed && { posted_at: listed, date_from_email: false }),
+    ...(description.length > 80 && { description, description_read: true }),
+  }
+}
+
+/** LinkedIn's public job page: "4 days ago" style posting time */
+async function checkLinkedin(l: Lead): Promise<Lead | 'closed' | null> {
+  const res = await page(`https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/${l.source_job_id}`)
+  if (!res.ok) {
+    await res.body?.cancel()
+    return null
+  }
+  const html = await res.text()
+  if (/no longer accepting applications/i.test(html)) return 'closed'
+  const ago = /posted-time-ago__text[^>]*>\s*([^<]+)/.exec(html)?.[1]?.trim() ?? ''
+  const m = /(\d+)\s*(minute|hour|day|week|month|year)s?\s+ago/i.exec(ago)
+  const unit = { minute: 6e4, hour: 3.6e6, day: 864e5, week: 6048e5, month: 2592e6, year: 31536e6 }[m?.[2].toLowerCase() as 'day']
+  const posted = m && unit ? new Date(Date.now() - Number(m[1]) * unit).toISOString() : /just now|moments? ago/i.test(ago) ? new Date().toISOString() : null
+  const description = plain(/show-more-less-html__markup[^>]*>([\s\S]*?)<\/div>/.exec(html)?.[1])
+  return {
+    ...l,
+    ...(posted && { posted_at: posted, date_from_email: false }),
+    ...(description.length > 80 && { description, description_read: true }),
+  }
+}
+
+/**
+ * Open each emailed job's own page (a few at a time) and sort by posting date:
+ * ok = posted since `since`; old; closed; unknown = the page couldn't confirm a date.
+ * A JobStreet card marked "Baru diposting" counts as new even if its page can't be read.
+ */
+export async function verifyLeads(leads: Lead[], since: number): Promise<Checked[]> {
+  const out: Checked[] = []
+  const queue = [...leads]
+  const worker = async () => {
+    for (let l = queue.shift(); l; l = queue.shift()) {
+      let r: Lead | 'closed' | null = null
+      try {
+        r = l.source === 'jobstreet' ? await checkJobstreet(l) : l.source === 'linkedin' ? await checkLinkedin(l) : l
+      } catch (e) {
+        console.error('verify', l.source, l.title, String(e))
+      }
+      if (r === 'closed') {
+        out.push({ lead: l, verdict: 'closed' })
+        continue
+      }
+      const lead = r ?? l
+      const confirmed = !lead.date_from_email && lead.posted_at
+      const verdict = confirmed
+        ? Date.parse(lead.posted_at!) >= since ? 'ok' : 'old'
+        : lead.listed_new ? 'ok' : lead.source === 'glints' ? 'ok' : 'unknown'
+      out.push({ lead, verdict })
+    }
+  }
+  await Promise.all(Array.from({ length: 5 }, worker))
+  return out
 }
 
 

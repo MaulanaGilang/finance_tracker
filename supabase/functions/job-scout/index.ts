@@ -3,10 +3,14 @@
 //                     a few companies per run, each at most once a day. Run by pg_cron and by "Scan now" in the app.
 //   action "ingest" - job-alert emails (LinkedIn, JobStreet, Glints) pushed by the Google Apps Script in your Gmail.
 //                     Needs the ingest key from job_scout_settings.
-// No logins, no scraping of sites that block it: only public feeds and your own emails.
+// No logins, no scraping of sites that block it: public feeds, your own emails, and each emailed job's public page
+// (to read its real posting date: only jobs posted in the last day are recommended).
 import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2'
 import { judge } from './rules.ts'
-import { BOARDS, COMPANIES_PER_RUN, FRESH_HOURS, RESCAN_HOURS, cors, fromEmail, json, type Company, type Lead, type Mail } from './sources.ts'
+import { BOARDS, COMPANIES_PER_RUN, FRESH_HOURS, RESCAN_HOURS, cors, fromEmail, json, verifyLeads, type Company, type Lead, type Mail } from './sources.ts'
+
+/** Recommendations you haven't acted on are removed at the first morning check after this many hours */
+const KEEP_HOURS = 20
 
 /** Score and store new leads (a job already seen is left as it is, including what you decided about it) */
 async function save(db: SupabaseClient, leads: Lead[]) {
@@ -37,19 +41,33 @@ Deno.serve(async (req) => {
       if (!s || body.key !== s.ingest_key) return json({ error: 'bad key' }, 401)
       // Only alerts from the last day. The Gmail script runs once a day at a slightly different minute each time,
       // so allow 2 hours of overlap; the script's label stops an email being sent twice.
-      const mails = ((Array.isArray(body.messages) ? body.messages : []) as Mail[]).filter((m) => Date.parse(m.date) >= cutoff - 2 * 3600e3)
-      const leads = mails.flatMap((m) => fromEmail(m))
+      const since = cutoff - 2 * 3600e3
+      const mails = ((Array.isArray(body.messages) ? body.messages : []) as Mail[]).filter((m) => Date.parse(m.date) >= since)
       // The same job can come in several emails: keep one
-      const unique = [...new Map(leads.map((l) => [`${l.source}:${l.source_job_id}`, l])).values()]
-      return json({ emails: mails.length, jobs: unique.length, added: await save(db, unique) })
+      const dedupe = (list: Lead[]) => [...new Map(list.map((l) => [`${l.source}:${l.source_job_id}`, l])).values()]
+      const found = dedupe(mails.flatMap((m) => fromEmail(m)))
+      // Each job's own page: real posting date (the email's date isn't it), still open, full text for the rules
+      const checked = await verifyLeads(found, since)
+      const count = (v: string) => checked.filter((c) => c.verdict === v).length
+      const fresh = dedupe(checked.filter((c) => c.verdict === 'ok').map((c) => c.lead))
+      return json({
+        emails: mails.length,
+        jobs: found.length,
+        posted_last_day: fresh.length,
+        older: count('old'),
+        closed: count('closed'),
+        date_unknown: count('unknown'),
+        added: await save(db, fresh),
+      })
     }
 
-    // Yesterday's recommendations you didn't act on go first (Applied ones are already in Applications)
+    // Yesterday's recommendations you didn't act on go first (Applied ones are already in Applications).
+    // 20 hours, not 24: the morning check (07:00) must also clear what the Gmail script added at 08:00 the day before.
     const { count: removed } = await db
       .from('job_leads')
       .delete({ count: 'exact' })
       .in('status', ['new', 'skipped'])
-      .lt('first_seen_at', new Date(cutoff).toISOString())
+      .lt('first_seen_at', new Date(Date.now() - KEEP_HOURS * 3600e3).toISOString())
 
     // Company boards: the ones not scanned in the last day, a few per run
     const since = new Date(Date.now() - RESCAN_HOURS * 3600e3).toISOString()

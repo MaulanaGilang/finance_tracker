@@ -1,5 +1,6 @@
 /**
- * Sends your job-alert emails (LinkedIn, JobStreet, Glints) to Ledger's job scout, once a day (06:00-07:00, before the morning check).
+ * Sends your job-alert emails (LinkedIn, JobStreet, Glints) to Ledger's job scout, once a day (08:00-09:00, after JobStreet's morning alert).
+ * Ledger opens each job's own page and only recommends jobs posted in the last 24 hours.
  * Runs in your own Google account (script.google.com). It only reads emails from those senders,
  * sends their text to Ledger, and adds the label "Ledger/Sent" so each email is sent once.
  * It never sends, deletes or changes any email.
@@ -49,6 +50,7 @@ function sendJobAlerts() {
 
 function setUp() {
   ScriptApp.getProjectTriggers().forEach((t) => ScriptApp.deleteTrigger(t))
-  // Once a day between 06:00 and 07:00 (your Google account's time zone), before Ledger's 07:00 check
-  ScriptApp.newTrigger('sendJobAlerts').timeBased().everyDays(1).atHour(6).create()
+  // Once a day between 08:00 and 09:00 (your Google account's time zone): after JobStreet's daily alert (about 07:00),
+  // so its jobs are still under a day old when Ledger checks their posting dates
+  ScriptApp.newTrigger('sendJobAlerts').timeBased().everyDays(1).atHour(8).create()
 }
