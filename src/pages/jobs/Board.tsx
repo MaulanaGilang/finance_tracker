@@ -86,8 +86,8 @@ export function Board() {
                 aria-label={STATUS[s].label}
                 className={cx(
                   // No backdrop-filter here: it would trap the dragged card under neighbouring columns
-                  'relative flex w-[264px] shrink-0 flex-col rounded-card border bg-white/50 p-2.5 transition-colors duration-200',
-                  isTarget ? 'border-accent bg-accent-soft/70' : 'border-white/80',
+                  'relative flex w-[264px] shrink-0 flex-col rounded-card border bg-card/70 p-2.5 transition-colors duration-200',
+                  isTarget ? 'border-accent/60 bg-accent-soft/70' : 'border-line',
                   dragFrom === s && 'z-10',
                 )}
               >

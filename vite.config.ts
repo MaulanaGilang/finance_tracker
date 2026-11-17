@@ -18,8 +18,8 @@ export default defineConfig({
         name: 'Ledger',
         short_name: 'Ledger',
         description: 'Personal income and spending tracker',
-        theme_color: '#F7F7F2',
-        background_color: '#F7F7F2',
+        theme_color: '#040506',
+        background_color: '#040506',
         display: 'standalone',
         start_url: '/',
         icons: [

@@ -23,13 +23,12 @@ export function HeroPanel({ children }: { children: ReactNode }) {
       onPointerMove={finePointer ? onMove : undefined}
       className="glow-panel group grid gap-6 rounded-[20px] p-6 sm:p-8 md:grid-cols-[1.3fr_1fr] md:items-end md:gap-10 md:p-10"
     >
-      <span className="light drift" style={{ width: 340, height: 340, right: '-6%', top: '-55%', background: '#e9f1ea', opacity: 0.32 }} />
-      <span className="light drift-slow" style={{ width: 260, height: 260, left: '-8%', bottom: '-60%', background: '#9fc9ae', opacity: 0.4 }} />
-      <span className="light" style={{ width: 120, height: 120, right: '30%', bottom: '-20%', background: '#ffffff', opacity: 0.16 }} />
+      <span className="light drift" style={{ width: 340, height: 340, right: '-6%', top: '-55%', background: 'var(--color-accent)', opacity: 0.18 }} />
+      <span className="light drift-slow" style={{ width: 260, height: 260, left: '-8%', bottom: '-60%', background: 'var(--color-accent)', opacity: 0.1 }} />
       {finePointer && (
         <motion.span
           className="light left-0 top-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          style={{ x: sx, y: sy, width: 320, height: 320, background: 'radial-gradient(circle, rgb(233 243 236 / 0.28) 0%, transparent 65%)' }}
+          style={{ x: sx, y: sy, width: 320, height: 320, background: 'radial-gradient(circle, color-mix(in srgb, var(--color-accent) 22%, transparent) 0%, transparent 65%)' }}
         />
       )}
       {children}

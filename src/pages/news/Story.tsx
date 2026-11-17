@@ -24,7 +24,7 @@ export function NewsStory() {
     if (loading || news.length === 0) return <Skeleton className="h-[60dvh] w-full rounded-[20px]" />
     return (
       <Card>
-        <Empty title="This story is no longer here" body="Stories older than 7 days are cleared unless you saved them." action={<Link to="/news/feed" className="glow-button inline-flex h-11 items-center rounded-pill bg-accent px-5 text-white">Back to the feed</Link>} />
+        <Empty title="This story is no longer here" body="Stories older than 7 days are cleared unless you saved them." action={<Link to="/news/feed" className="glow-button inline-flex h-11 items-center rounded-pill px-5">Back to the feed</Link>} />
       </Card>
     )
   }
@@ -88,7 +88,7 @@ function Story({ a }: { a: NewsArticle }) {
       <div className={cx('relative z-10', hasGlobe ? 'mt-[50dvh] lg:ml-auto lg:mt-0 lg:w-[480px]' : 'mx-auto max-w-[720px]')}>
         <div
           ref={panel}
-          className="rounded-[20px] border border-white/80 bg-canvas/75 p-5 ring-1 ring-line/60 backdrop-blur-xl backdrop-saturate-150 sm:p-7"
+          className="frost rounded-[20px] p-5 sm:p-7"
         >
           <button onClick={back} className="-ml-2 mb-4 inline-flex h-9 items-center gap-1.5 rounded-pill pl-2 pr-3.5 text-[14px] text-muted transition-colors hover:bg-raised hover:text-ink">
             <ArrowLeft size={16} /> Back
@@ -140,7 +140,7 @@ function Story({ a }: { a: NewsArticle }) {
 
           <footer className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-5">
             <div className="flex items-center gap-2">
-              <a href={a.url} target="_blank" rel="noreferrer" className="glow-button inline-flex h-10 items-center gap-2 rounded-pill bg-accent px-4 text-[14px] text-white">
+              <a href={a.url} target="_blank" rel="noreferrer" className="glow-button inline-flex h-10 items-center gap-2 rounded-pill px-4 text-[14px]">
                 Read on {a.source} <ArrowSquareOut size={15} />
               </a>
               <IconButton label={a.saved ? 'Remove from saved' : 'Save for later'} onClick={() => toggleNewsSaved(a).catch(() => {})} className={a.saved ? 'text-accent' : 'text-muted'}>
@@ -181,7 +181,7 @@ function PlaceChips({ places, focus, globe }: { places: Place[]; focus: number; 
               style={{ color }}
             >
               {active && <motion.span layoutId="place-pill" transition={pillSpring} className="absolute inset-0 rounded-pill" style={{ background: `color-mix(in srgb, ${color} 12%, transparent)` }} />}
-              <span className="relative flex size-6 items-center justify-center overflow-hidden rounded-full ring-1 ring-black/5" style={{ background: `color-mix(in srgb, ${color} 18%, white)` }}>
+              <span className="relative flex size-6 items-center justify-center overflow-hidden rounded-full ring-1 ring-white/10" style={{ background: `color-mix(in srgb, ${color} 22%, #111214)` }}>
                 {flags[i] ? <img src={flags[i]!} alt="" className="size-full object-cover" /> : null}
               </span>
               <span className="relative">{p.name}</span>

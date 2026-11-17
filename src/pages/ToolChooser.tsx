@@ -1,9 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router'
 import { motion } from 'motion/react'
-import { ArrowRight, BookOpenText, Briefcase, LockSimple, Newspaper, Wallet } from '@phosphor-icons/react'
+import { ArrowRight, BookOpenText, Briefcase, LockSimple, MagnifyingGlass, Newspaper, Wallet } from '@phosphor-icons/react'
 import { mangaKpis } from '../lib/manga'
-import { Logo, useToolTheme } from '../components/AppShell'
+import { Logo, launcherKey, openLauncher, useToolTheme } from '../components/AppShell'
 import { dayLabel } from '../lib/format'
 import { goingQuiet, jobKpis } from '../lib/jobs'
 import { isHighImpact, within } from '../lib/news'
@@ -34,15 +34,28 @@ export function ToolChooser() {
     <div className="mx-auto flex min-h-[100dvh] max-w-[1200px] flex-col px-4 pb-10 pt-[max(1rem,env(safe-area-inset-top))] md:px-8">
       <header className="flex h-16 items-center justify-between">
         <Logo />
-        <button onClick={() => lock()} className="inline-flex items-center gap-2 rounded-pill px-3 py-2 text-[14px] text-muted transition-colors hover:bg-raised hover:text-ink">
-          <LockSimple size={16} /> Lock
+        <button onClick={() => lock()} className="inline-flex items-center gap-2 rounded-[8px] px-3 py-2 text-[13px] text-muted transition-colors hover:bg-raised hover:text-ink">
+          <LockSimple size={15} /> Lock
         </button>
       </header>
 
-      <motion.main className="flex flex-1 flex-col justify-center gap-8 py-8" variants={listVariants} initial="initial" animate="animate">
-        <motion.div variants={itemVariants}>
-          <p className="mb-2 text-[15px] text-muted">{greeting()}</p>
-          <h1 className="font-display text-[32px] leading-[1.15] sm:text-[42px]">What are we tracking?</h1>
+      <motion.main className="flex flex-1 flex-col justify-center gap-10 py-8" variants={listVariants} initial="initial" animate="animate">
+        <motion.div variants={itemVariants} className="flex flex-col items-center text-center">
+          <p className="eyebrow mb-4">{greeting()}</p>
+          <h1 className="text-balance text-[36px] font-normal leading-[1.12] tracking-[0.004em] sm:text-[56px]">What are we tracking?</h1>
+          {/* Raycast's front door: one bar to reach everything */}
+          <button
+            onClick={openLauncher}
+            className="mt-8 flex h-12 w-full max-w-[520px] items-center gap-3 rounded-[12px] bg-white/[0.04] px-4 text-left text-[15px] text-faint shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_0_0_1px_rgb(255_255_255/0.09)] transition-colors hover:bg-white/[0.06] hover:text-muted"
+          >
+            <MagnifyingGlass size={18} />
+            <span className="flex-1 truncate">
+              Search<span className="hidden sm:inline"> tools, pages and actions</span>…
+            </span>
+            <span className="hidden sm:inline-flex">
+              <span className="kbd">{launcherKey}</span>
+            </span>
+          </button>
         </motion.div>
 
         <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4">
@@ -52,7 +65,7 @@ export function ToolChooser() {
             title="Budget"
             body="Income, spending and reports."
             stat={lastEntry ? `Last entry ${lastLabel}` : 'No entries yet'}
-            palette={{ '--panel-1': '#2a5f49', '--panel-2': '#1f4d3a', '--panel-3': '#163829', glow: '#cfe7d7' }}
+            accent="#59d499"
           />
           <ToolCard
             to="/jobs"
@@ -60,7 +73,7 @@ export function ToolChooser() {
             title="Job Applications"
             body="Pipeline, follow-ups and responses."
             stat={`${k.active} active${quiet ? ` · ${quiet} going quiet` : ''}`}
-            palette={{ '--panel-1': '#3c4c96', '--panel-2': '#2b3a7a', '--panel-3': '#1c2654', glow: '#d6ddf6' }}
+            accent="#63a1ff"
           />
           <ToolCard
             to="/news"
@@ -68,7 +81,7 @@ export function ToolChooser() {
             title="News"
             body="AI, robotics, geopolitics and the markets."
             stat={`${today.length} today${movers ? ` · ${movers} market movers` : ''}`}
-            palette={{ '--panel-1': '#8a3a46', '--panel-2': '#6e2a35', '--panel-3': '#4a1a22', glow: '#f3d9dd' }}
+            accent="#ff7a93"
           />
           <ToolCard
             to="/manga"
@@ -76,7 +89,7 @@ export function ToolChooser() {
             title="Manga"
             body="What you're reading and what came out."
             stat={`${mk.reading} reading${mk.withNew ? ` · ${mk.withNew} with new chapters` : ''}`}
-            palette={{ '--panel-1': '#9c6220', '--panel-2': '#7f4d12', '--panel-3': '#54320a', glow: '#f6e3c6' }}
+            accent="#f5b14c"
           />
         </motion.div>
       </motion.main>
@@ -84,41 +97,32 @@ export function ToolChooser() {
   )
 }
 
-function ToolCard({
-  to,
-  icon,
-  title,
-  body,
-  stat,
-  palette: { glow, ...vars },
-}: {
-  to: string
-  icon: ReactNode
-  title: string
-  body: string
-  stat: string
-  palette: Record<'--panel-1' | '--panel-2' | '--panel-3' | 'glow', string>
-}) {
+/** One tool, like an extension in Raycast's store: a black key-cap card with the tool's hue leaking in */
+function ToolCard({ to, icon, title, body, stat, accent }: { to: string; icon: ReactNode; title: string; body: string; stat: string; accent: string }) {
   return (
     // h-full on the wrapper and the link: cards in a row share one height even when a title wraps
-    <motion.div className="h-full" whileHover={{ y: -4 }} whileTap={{ scale: 0.985 }} transition={{ duration: 0.35, ease: EASE_OUT }}>
+    <motion.div className="h-full" whileHover={{ y: -3 }} whileTap={{ scale: 0.985 }} transition={{ duration: 0.3, ease: EASE_OUT }}>
       <Link
         to={to}
-        style={vars as CSSProperties}
-        className="glow-panel group flex h-full min-h-[220px] flex-col justify-between rounded-[22px] p-6 outline-offset-4 sm:min-h-[260px] sm:p-8"
+        style={{ '--panel-accent': accent } as CSSProperties}
+        className="glow-panel group flex h-full min-h-[200px] flex-col justify-between rounded-[20px] p-6 outline-offset-4 sm:min-h-[240px]"
       >
-        {/* Soft-focus light; brightens on hover */}
-        <span className="light drift transition-opacity duration-500 group-hover:opacity-60" style={{ width: 300, height: 300, right: '-12%', top: '-40%', background: glow, opacity: 0.35 }} />
-        <span className="light drift-slow" style={{ width: 220, height: 220, left: '-10%', bottom: '-45%', background: glow, opacity: 0.25 }} />
+        {/* The tool's light, brighter on hover */}
+        <span className="light transition-opacity duration-500 group-hover:opacity-40" style={{ width: 280, height: 280, right: '-18%', top: '-45%', background: accent, opacity: 0.22 }} />
 
-        <span className="glass-on-dark flex size-11 items-center justify-center rounded-full">{icon}</span>
+        <span
+          className="flex size-11 items-center justify-center rounded-full bg-[#1b1c1e] shadow-[inset_0_1px_0_rgb(255_255_255/0.1),0_0_0_1px_rgb(255_255_255/0.06)]"
+          style={{ color: accent }}
+        >
+          {icon}
+        </span>
         <div>
-          <h2 className="mb-1.5 font-display text-[26px] leading-[1.15] sm:text-[30px]">{title}</h2>
-          <p className="mb-5 text-[15px] text-white/70">{body}</p>
+          <h2 className="mb-1 text-[22px] font-medium leading-[1.2] tracking-[0.004em]">{title}</h2>
+          <p className="mb-5 text-[14px] leading-[1.45] text-muted">{body}</p>
           <div className="flex items-center justify-between gap-3">
-            <span className="glass-on-dark truncate rounded-pill px-3.5 py-1.5 text-[13px] tabular-nums">{stat}</span>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/90 text-ink transition-transform duration-300 group-hover:translate-x-1">
-              <ArrowRight size={18} />
+            <span className="min-w-0 rounded-[6px] bg-[#1b1c1e] px-2 py-1 font-mono text-[12px] leading-[1.5] tabular-nums text-muted">{stat}</span>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] text-faint transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-ink">
+              <ArrowRight size={16} />
             </span>
           </div>
         </div>

@@ -47,7 +47,7 @@ export function Dashboard() {
             <AnimatedMoney
               value={t.net}
               signed
-              className={cx('block font-display text-[40px] leading-[1.1] sm:text-[56px]', t.net < 0 && 'text-[#f4b4a8]')}
+              className={cx('block font-display text-[40px] leading-[1.1] sm:text-[56px]', t.net < 0 && 'text-expense')}
             />
             <p className="mt-3 text-[13px] text-white/70">
               {t.income > 0 ? `You kept ${Math.max(0, Math.round((t.net / t.income) * 100))}% of your income.` : 'No income recorded yet.'}
@@ -152,7 +152,7 @@ const INSIGHT_ICON = {
 function InsightTile({ insight }: { insight: Insight }) {
   const Icon = INSIGHT_ICON[insight.kind]
   return (
-    <div className="frost flex min-w-0 items-start gap-3.5 rounded-card border border-white/80 p-4 ring-1 ring-line/60 sm:p-5">
+    <div className="frost flex min-w-0 items-start gap-3.5 rounded-card p-4 sm:p-5">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
         <Icon size={18} />
       </span>

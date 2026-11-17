@@ -5,14 +5,14 @@ import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContaine
 import { formatCompact, formatIDR } from '../lib/format'
 import type { CategorySlice, MonthPoint } from '../lib/stats'
 
-const INCOME = '#2F7A55'
-const EXPENSE = '#B5483B'
-const GRID = '#E4E4DC'
-const TICK = { fill: '#616862', fontSize: 12 }
+const INCOME = '#59d499'
+const EXPENSE = '#ff7b72'
+const GRID = '#1b1c1e'
+const TICK = { fill: '#6a6b6c', fontSize: 12 }
 
 function TooltipBox({ title, rows }: { title: string; rows: { label: string; value: number; color: string }[] }) {
   return (
-    <div className="frost rounded-[12px] border border-white/80 px-3.5 py-2.5 text-[13px] ring-1 ring-line/60">
+    <div className="frost rounded-[12px] px-3.5 py-2.5 text-[13px]">
       <p className="mb-1.5 font-[480]">{title}</p>
       {rows.map((r) => (
         <p key={r.label} className="flex items-center gap-2 tabular-nums">
@@ -29,7 +29,7 @@ function TooltipBox({ title, rows }: { title: string; rows: { label: string; val
 export function CashflowChart({ data, height = 240 }: { data: MonthPoint[]; height?: number }) {
   // React 19 ids contain characters that are invalid inside SVG url(#...) references
   const id = 'cf' + useId().replace(/[^a-zA-Z0-9_-]/g, '')
-  const glowDot = (color: string) => ({ r: 5, fill: color, stroke: '#ffffff', strokeWidth: 2, style: { filter: `url(#${id}-glow)` } })
+  const glowDot = (color: string) => ({ r: 5, fill: color, stroke: '#07080a', strokeWidth: 2, style: { filter: `url(#${id}-glow)` } })
   return (
     // Lines draw in left to right when the chart mounts. Mount, not scroll-into-view: a missed\n    // intersection event would otherwise leave the chart permanently clipped.
     <motion.div
@@ -62,7 +62,7 @@ export function CashflowChart({ data, height = 240 }: { data: MonthPoint[]; heig
           <XAxis dataKey="label" tickLine={false} axisLine={false} tick={TICK} dy={6} interval="preserveStartEnd" />
           <YAxis tickLine={false} axisLine={false} tick={TICK} tickFormatter={formatCompact} width={44} />
           <Tooltip
-            cursor={{ stroke: '#C9CBC2', strokeDasharray: '3 3' }}
+            cursor={{ stroke: '#363739', strokeDasharray: '3 3' }}
             content={({ active, payload }) =>
               active && payload?.length ? (
                 <TooltipBox

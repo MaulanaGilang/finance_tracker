@@ -7,6 +7,7 @@ import { AppShell, type Tool } from './components/AppShell'
 import { Atmosphere } from './components/Atmosphere'
 import { Composer } from './components/Composer'
 import { Intro } from './components/Intro'
+import { Launcher } from './components/Launcher'
 import { JobComposer } from './components/jobs/JobComposer'
 import { MangaComposer } from './components/manga/MangaComposer'
 import { PinScreen } from './components/PinScreen'
@@ -131,6 +132,7 @@ function App() {
       ) : (
         <motion.div key="app" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: 0.4, ease: EASE_OUT } }}>
           <Spaces />
+          <Launcher />
         </motion.div>
       )}
     </AnimatePresence>

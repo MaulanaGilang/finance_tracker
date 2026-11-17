@@ -101,7 +101,7 @@ export function MangaUpdates() {
 
 function Kpi({ label, value, to, accent }: { label: string; value: number; to: string; accent?: boolean }) {
   return (
-    <Link to={to} className="frost group rounded-card border border-white/80 p-5 ring-1 ring-line/60 transition-colors hover:bg-card/80">
+    <Link to={to} className="frost group rounded-card p-5 transition-colors hover:bg-card/80">
       <p className="mb-2 text-[13px] text-muted">{label}</p>
       <p className="flex items-center justify-between font-display text-[30px] leading-none tabular-nums">
         <span className={accent && value ? 'text-accent' : undefined}>{value}</span>
@@ -123,7 +123,7 @@ function FreshRow({ manga }: { manga: Manga }) {
         className="flex cursor-pointer items-center gap-3 rounded-[10px] px-2 py-3 transition-colors hover:bg-raised"
       >
         <span className="w-12 shrink-0 text-center">
-          <span className="inline-block rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] tabular-nums text-white">{unreadLabel(manga)}</span>
+          <span className="inline-block rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] tabular-nums text-canvas">{unreadLabel(manga)}</span>
         </span>
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0">

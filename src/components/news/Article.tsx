@@ -10,7 +10,7 @@ export function TopicTag({ topic, className }: { topic: NewsTopic; className?: s
   return (
     <span
       className={cx('inline-flex h-6 items-center rounded-pill px-2.5 text-[11px] font-[480]', className)}
-      style={{ background: `color-mix(in srgb, ${color} 12%, transparent)`, color: `color-mix(in srgb, ${color} 88%, #1c211e)` }}
+      style={{ background: `color-mix(in srgb, ${color} 22%, transparent)`, color: `color-mix(in srgb, ${color} 55%, #ffffff)` }}
     >
       {short}
     </span>
@@ -19,7 +19,7 @@ export function TopicTag({ topic, className }: { topic: NewsTopic; className?: s
 
 export function ImpactBadge() {
   return (
-    <span className="inline-flex h-6 items-center gap-1 rounded-pill bg-accent px-2.5 text-[11px] font-[480] text-white" title="Mentions several market-moving terms">
+    <span className="inline-flex h-6 items-center gap-1 rounded-pill bg-accent px-2.5 text-[11px] font-[480] text-canvas" title="Mentions several market-moving terms">
       <TrendUp size={12} weight="bold" /> Market mover
     </span>
   )

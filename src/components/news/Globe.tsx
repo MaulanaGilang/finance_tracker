@@ -17,7 +17,7 @@ import type { Place } from '../../lib/countries'
 */
 
 /** One colour per stop, for the light UI (chips, labels) */
-export const PLACE_COLORS = ['#8a3a46', '#3c4c96', '#2a5f49', '#b07a1f']
+export const PLACE_COLORS = ['#ff8fa3', '#9db1ff', '#7fd8a8', '#f5c46b']
 /** The same family, lifted so it reads on the dark relief */
 const GLOBE_COLORS = ['#d8607a', '#7a92ea', '#58b487', '#e8b04a']
 
@@ -646,7 +646,7 @@ export function Globe({
       <div
         ref={shadow}
         className="pointer-events-none absolute left-0 top-0 rounded-full will-change-transform"
-        style={{ opacity: 0, boxShadow: '0 40px 120px -20px rgba(28,33,30,0.45), 0 0 0 1px rgba(28,33,30,0.08)' }}
+        style={{ opacity: 0, boxShadow: '0 40px 120px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}
       />
       <canvas ref={canvas} className="pointer-events-none absolute inset-0 size-full" style={{ opacity: 0 }} aria-hidden />
       {places.map((p, i) => (
@@ -668,7 +668,7 @@ export function Globe({
           ref={(n) => {
             labels.current[i] = n
           }}
-          className="pointer-events-none absolute left-0 top-0 flex items-center gap-1.5 whitespace-nowrap rounded-pill bg-card/90 py-1 pl-1 pr-2.5 text-[12px] font-[480] shadow-[0_1px_0_rgba(28,33,30,0.06)] ring-1 backdrop-blur-md will-change-transform"
+          className="pointer-events-none absolute left-0 top-0 flex items-center gap-1.5 whitespace-nowrap rounded-pill bg-card/90 py-1 pl-1 pr-2.5 text-[12px] font-[480] shadow-[0_4px_12px_rgba(0,0,0,0.4)] ring-1 backdrop-blur-md will-change-transform"
           style={{ opacity: 0, color: PLACE_COLORS[i % PLACE_COLORS.length], ['--tw-ring-color' as string]: `color-mix(in srgb, ${PLACE_COLORS[i % PLACE_COLORS.length]} 35%, transparent)` }}
           aria-hidden
         >

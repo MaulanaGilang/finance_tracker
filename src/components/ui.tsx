@@ -8,15 +8,16 @@ import { addMonths, currentMonth, formatIDR, monthLabel } from '../lib/format'
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ')
 
 // ---------------------------------------------------------------------------
-// Buttons: pill-shaped, flat. Forest fill is reserved for the primary action.
+// Buttons: 8px radius. The primary action is neutral Mist (Raycast has no coloured buttons); the rest are
+// recessed dark keys or hairline ghosts.
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
 const variants: Record<Variant, string> = {
-  primary: 'glow-button bg-accent text-white',
-  secondary: 'bg-raised text-ink hover:bg-line',
+  primary: 'glow-button',
+  secondary: 'bg-raised text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_0_0_1px_rgb(255_255_255/0.06)] hover:bg-[#18191b]',
   ghost: 'border border-line-strong text-ink hover:bg-raised',
-  danger: 'border border-line-strong text-expense hover:bg-expense/5',
+  danger: 'border border-line-strong text-expense hover:bg-expense/10',
 }
 
 export function Button({
@@ -64,7 +65,7 @@ export function IconButton({
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   // min-w-0 lets cards shrink inside grid tracks instead of stretching to fit chart content
-  return <section className={cx('frost min-w-0 rounded-card border border-white/80 p-5 ring-1 ring-line/60 sm:p-7', className)}>{children}</section>
+  return <section className={cx('frost min-w-0 rounded-card p-5 sm:p-7', className)}>{children}</section>
 }
 
 export function CardTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
@@ -102,7 +103,7 @@ export function Segmented<T extends string>({
 }) {
   const groupId = useId()
   return (
-    <div role="radiogroup" aria-label={label} className={cx('inline-flex rounded-pill bg-raised/70 p-1 backdrop-blur-md', className)}>
+    <div role="radiogroup" aria-label={label} className={cx('inline-flex rounded-[10px] bg-raised p-1 shadow-[0_0_0_1px_rgb(255_255_255/0.05)]', className)}>
       {options.map((o) => {
         const active = value === o.value
         return (
@@ -112,13 +113,17 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cx(
-              'relative h-9 flex-1 whitespace-nowrap rounded-pill px-3 text-[14px] font-[440] transition-colors sm:px-4',
+              'relative h-8 flex-1 whitespace-nowrap rounded-[6px] px-3 text-[13px] font-medium transition-colors sm:px-4',
               active ? 'text-ink' : 'text-muted hover:text-ink',
             )}
           >
             {/* The white thumb slides to the selected option */}
             {active && (
-              <motion.span layoutId={`seg-${groupId}`} transition={pillSpring} className="absolute inset-0 rounded-pill bg-card ring-1 ring-line" />
+              <motion.span
+                layoutId={`seg-${groupId}`}
+                transition={pillSpring}
+                className="absolute inset-0 rounded-[6px] bg-[#1b1c1e] shadow-[inset_0_1px_0_rgb(255_255_255/0.1),0_0_0_1px_rgb(255_255_255/0.06)]"
+              />
             )}
             <span className="relative">{o.label}</span>
           </button>
@@ -131,7 +136,7 @@ export function Segmented<T extends string>({
 export function MonthStepper({ value, onChange }: { value: string; onChange: (k: string) => void }) {
   const atCurrent = value >= currentMonth()
   return (
-    <div className="frost inline-flex items-center gap-1 rounded-pill border border-white/80 p-1 ring-1 ring-line/60">
+    <div className="frost inline-flex items-center gap-1 rounded-pill p-1">
       <IconButton label="Previous month" className="size-9" onClick={() => onChange(addMonths(value, -1))}>
         <CaretLeft size={16} />
       </IconButton>
@@ -162,10 +167,11 @@ export function Field({ label, htmlFor, children, hint }: { label: string; htmlF
   )
 }
 
+// Inset well you can type into: a faint white tint recessed into the dark surface
 export const inputClass =
-  'h-12 w-full rounded-pill border border-line-strong bg-card px-5 text-[16px] text-ink placeholder:text-muted/80 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15'
+  'h-12 w-full rounded-[10px] border border-white/[0.07] bg-white/[0.04] px-4 text-[16px] text-ink placeholder:text-faint focus:border-accent/60 focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-accent/15'
 
-export const selectClass = inputClass + ' appearance-none pr-10 bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 256 256%27%3E%3Cpath fill=%27%23616862%27 d=%27M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z%27/%3E%3C/svg%3E")] bg-[length:12px] bg-[right_1.1rem_center] bg-no-repeat'
+export const selectClass = inputClass + ' appearance-none pr-10 bg-[url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 256 256%27%3E%3Cpath fill=%27%239c9c9d%27 d=%27M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z%27/%3E%3C/svg%3E")] bg-[length:12px] bg-[right_1.1rem_center] bg-no-repeat'
 
 // ---------------------------------------------------------------------------
 
@@ -197,7 +203,7 @@ export function Delta({ value, goodWhenUp = true, onDark = false }: { value: num
   if (Math.abs(value) < 0.0005) return <span className={cx('text-[12px]', muted)}>No change</span>
   const up = value >= 0
   const good = up === goodWhenUp
-  const color = onDark ? (good ? 'text-[#a9dcbf]' : 'text-[#f4b4a8]') : good ? 'text-income' : 'text-expense'
+  const color = onDark ? (good ? 'text-income' : 'text-expense') : good ? 'text-income' : 'text-expense'
   return (
     <span className={cx('text-[12px] font-[480] tabular-nums', color)}>
       {up ? '▲' : '▼'} {Math.abs(value * 100).toFixed(1)}%

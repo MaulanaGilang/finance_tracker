@@ -210,7 +210,7 @@ function LeadRow({ lead, onMessage }: { lead: JobLead; onMessage: (m: { text: st
                   key={f}
                   className={cx(
                     'rounded-pill px-2 py-0.5 text-[12px]',
-                    lead.tier === 'skip' ? 'bg-expense/10 text-expense' : 'bg-[#f6e7c8] text-[#6b4a10]',
+                    lead.tier === 'skip' ? 'bg-expense/10 text-expense' : 'bg-[#f5b14c]/15 text-[#f5b14c]',
                   )}
                 >
                   {f.replace(/\.$/, '')}

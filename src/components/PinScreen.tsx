@@ -173,7 +173,7 @@ function Key({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement
   return (
     <button
       {...rest}
-      className="frost flex size-[72px] items-center justify-center rounded-full border border-white/80 ring-1 ring-line/60 font-display text-[24px] tabular-nums transition-[background-color,transform] hover:bg-raised active:scale-95 disabled:opacity-50"
+      className="frost flex size-[72px] items-center justify-center rounded-full font-display text-[24px] tabular-nums transition-[background-color,transform] hover:bg-raised active:scale-95 disabled:opacity-50"
     >
       {children}
     </button>

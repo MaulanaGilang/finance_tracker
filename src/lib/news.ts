@@ -23,22 +23,22 @@ export interface NewsArticle {
 }
 
 export const TOPICS: Record<NewsTopic, { label: string; short: string; color: string }> = {
-  ai: { label: 'AI', short: 'AI', color: '#5B4BA6' },
-  robotics: { label: 'Robotics', short: 'Robotics', color: '#2F7A8C' },
-  geopolitics: { label: 'Geopolitics', short: 'Geopolitics', color: '#9A3B2E' },
-  central_banks: { label: 'Central banks & rates', short: 'Rates', color: '#2B3A7A' },
-  energy: { label: 'Energy & commodities', short: 'Energy', color: '#B07A1F' },
-  trade: { label: 'Trade & tariffs', short: 'Trade', color: '#3F6E5A' },
-  semiconductors: { label: 'Semiconductors', short: 'Chips', color: '#6B7A99' },
+  ai: { label: 'AI', short: 'AI', color: '#9b8cf0' },
+  robotics: { label: 'Robotics', short: 'Robotics', color: '#5cc0d4' },
+  geopolitics: { label: 'Geopolitics', short: 'Geopolitics', color: '#f08068' },
+  central_banks: { label: 'Central banks & rates', short: 'Rates', color: '#7b93f0' },
+  energy: { label: 'Energy & commodities', short: 'Energy', color: '#f5b14c' },
+  trade: { label: 'Trade & tariffs', short: 'Trade', color: '#6fcf9c' },
+  semiconductors: { label: 'Semiconductors', short: 'Chips', color: '#9aa5c0' },
 }
 export const TOPIC_ORDER = Object.keys(TOPICS) as NewsTopic[]
 
 /** The Feed and Briefing group the 7 topics into 3 */
 export type NewsGroup = 'tech' | 'economy' | 'world'
 export const GROUPS: Record<NewsGroup, { label: string; short: string; color: string; topics: NewsTopic[] }> = {
-  tech: { label: 'Tech & AI', short: 'Tech', color: '#5B4BA6', topics: ['ai', 'robotics', 'semiconductors'] },
-  economy: { label: 'Economy & Markets', short: 'Economy', color: '#B07A1F', topics: ['central_banks', 'energy'] },
-  world: { label: 'Geopolitics & Trade', short: 'World', color: '#9A3B2E', topics: ['geopolitics', 'trade'] },
+  tech: { label: 'Tech & AI', short: 'Tech', color: '#9b8cf0', topics: ['ai', 'robotics', 'semiconductors'] },
+  economy: { label: 'Economy & Markets', short: 'Economy', color: '#f5b14c', topics: ['central_banks', 'energy'] },
+  world: { label: 'Geopolitics & Trade', short: 'World', color: '#f08068', topics: ['geopolitics', 'trade'] },
 }
 export const GROUP_ORDER = Object.keys(GROUPS) as NewsGroup[]
 export const inGroup = (a: NewsArticle, g: NewsGroup) => a.topics.some((t) => GROUPS[g].topics.includes(t))

@@ -57,16 +57,16 @@ export interface JobInput {
  * Colors are the Ink status palette.
  */
 export const STATUS: Record<JobStatus, { label: string; short: string; color: string; stage: number | null }> = {
-  applied: { label: 'Applied', short: 'Applied', color: '#6B7A99', stage: 0 },
-  hr_interview: { label: 'HR interview', short: 'HR', color: '#3E5BA9', stage: 1 },
-  test: { label: 'Test', short: 'Test', color: '#7A5BB5', stage: 2 },
-  user_interview: { label: 'User interview', short: 'User', color: '#2B3A7A', stage: 3 },
-  medical_checkup: { label: 'Medical checkup', short: 'MCU', color: '#2F7A55', stage: 4 },
-  offer: { label: 'Offer', short: 'Offer', color: '#2F7A55', stage: 5 },
-  accepted: { label: 'Accepted', short: 'Accepted', color: '#1F6B45', stage: 6 },
-  other: { label: 'Other', short: 'Other', color: '#9A8F7A', stage: null },
-  rejected: { label: 'Rejected', short: 'Rejected', color: '#B5483B', stage: null },
-  ghosted: { label: 'Ghosted', short: 'Ghosted', color: '#A3A69F', stage: null },
+  applied: { label: 'Applied', short: 'Applied', color: '#9aa5c0', stage: 0 },
+  hr_interview: { label: 'HR interview', short: 'HR', color: '#6f8fe0', stage: 1 },
+  test: { label: 'Test', short: 'Test', color: '#a98be0', stage: 2 },
+  user_interview: { label: 'User interview', short: 'User', color: '#63a1ff', stage: 3 },
+  medical_checkup: { label: 'Medical checkup', short: 'MCU', color: '#7fd8a8', stage: 4 },
+  offer: { label: 'Offer', short: 'Offer', color: '#59d499', stage: 5 },
+  accepted: { label: 'Accepted', short: 'Accepted', color: '#3fc283', stage: 6 },
+  other: { label: 'Other', short: 'Other', color: '#c4b89c', stage: null },
+  rejected: { label: 'Rejected', short: 'Rejected', color: '#ff7b72', stage: null },
+  ghosted: { label: 'Ghosted', short: 'Ghosted', color: '#8a8b8c', stage: null },
 }
 
 /** Board column / select order */
@@ -170,7 +170,7 @@ const STAGE_FLOW: { stage: number; status: JobStatus }[] = [
  * stay on that stage's node, so its outgoing flows are thinner than its incoming one.
  */
 export function flowGraph(jobs: Job[]): FlowGraph {
-  const nodes: FlowNode[] = [{ name: 'Applications', color: '#8A8F87', kind: 'root' }]
+  const nodes: FlowNode[] = [{ name: 'Applications', color: '#9c9c9d', kind: 'root' }]
   const links: FlowGraph['links'] = []
   const add = (node: FlowNode, from: number, value: number) => {
     if (value <= 0) return -1

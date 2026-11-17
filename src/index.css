@@ -1,73 +1,119 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter/wght.css";
-@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/geist-mono/wght.css";
 
 /*
-  Mercury structure (Refero extraction) on the light "Forest" palette.
-  - Flat surfaces, separation by value contrast and hairlines, no shadows
-  - Intermediate weights: 400 body, 420 UI, 480 emphasis/headings
-  - Pill radius for every control, 12px for cards
-  - Wide-set display face (Archivo at expanded width, standing in for Söhne Breit)
+  Raycast structure (Refero extraction): "midnight command center".
+  - Near-black canvas, one step up for cards, elevation from inset "keyboard key" strokes, never drop shadows
+  - Inter for everything readable (headings at regular-to-medium weight, slightly positive tracking);
+    Geist Mono for technical micro-labels and keyboard hints
+  - 8px radius for buttons, inputs and badges; 16-20px for cards; pills only for tags
+  - Primary actions are neutral light-gray (Mist on Iron), never coloured
+  - Colour is rationed: Ledger's coral is the brand mark; each tool keeps one light hue for small accents
 */
 @theme {
-  --color-canvas: #f7f7f2;
-  --color-card: #ffffff;
-  --color-raised: #efefe8;
-  --color-line: #e4e4dc;
-  --color-line-strong: #c9cbc2;
-  --color-ink: #1c211e;
-  --color-muted: #616862;
-  --color-accent: #1f4d3a;
-  --color-accent-hover: #183e2f;
-  --color-accent-soft: #dce8e0;
-  --color-income: #2f7a55;
-  --color-expense: #b5483b;
+  --color-canvas: #040506;
+  --color-card: #07080a;
+  --color-raised: #111214;
+  --color-line: #1b1c1e;
+  --color-line-strong: #363739;
+  --color-ink: #f4f4f5;
+  --color-muted: #9c9c9d;
+  --color-faint: #6a6b6c;
+  --color-mist: #e6e6e6;
+  --color-iron: #454647;
+  --color-coral: #ff6363;
+  --color-accent: #ff6363;
+  --color-accent-hover: #ff8080;
+  --color-accent-soft: #2a1617;
+  --color-income: #59d499;
+  --color-expense: #ff7b72;
 
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --radius-card: 12px;
-  --radius-pill: 40px;
+  --radius-card: 16px;
+  --radius-pill: 8px;
 }
 
+/* Headings: Raycast lets size do the work, at regular-to-medium weight with a hair of positive tracking */
 @utility font-display {
   font-family: var(--font-display);
-  font-stretch: 112%;
-  font-weight: 480;
-  letter-spacing: 0.015em;
+  font-weight: 500;
+  letter-spacing: 0.004em;
+}
+
+/* Technical micro-labels: version strings, keyboard hints, eyebrows */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-faint);
 }
 
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
     text-size-adjust: 100%;
+    color-scheme: dark;
     /* Reserve the scrollbar's space so pages don't shift sideways when a sheet locks scrolling */
     scrollbar-gutter: stable;
+  }
+  /* Thin, quiet scrollbars everywhere instead of the system's grey bars with arrows */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #363739 transparent;
   }
   body {
     background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-weight: 400;
-    font-feature-settings: "cv11", "ss01";
+    font-feature-settings: "calt", "kern", "liga", "ss03", "cv11";
     -webkit-font-smoothing: antialiased;
   }
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
   input[type="date"]::-webkit-calendar-picker-indicator {
     opacity: 0.55;
     cursor: pointer;
+    filter: invert(1);
   }
 }
 
 /*
-  Mercury's soft-focus atmosphere, adapted to light:
-  blurred light sources behind frosted surfaces, plus film grain on top.
+  Per-tool "spaces": each tool keeps one light hue for small accents (active tab, icons, charts, highlights).
+  The lobby (intro, PIN, tool chooser) uses Ledger's coral. Set via <html data-tool="...">.
 */
+:root {
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 14%, #07080a);
+  --orb: var(--color-accent);
+}
+:root[data-tool="budget"] {
+  --color-accent: #59d499;
+  --color-accent-hover: #7ee0b1;
+}
+:root[data-tool="jobs"] {
+  --color-accent: #63a1ff;
+  --color-accent-hover: #8ab9ff;
+}
+:root[data-tool="news"] {
+  --color-accent: #ff7a93;
+  --color-accent-hover: #ff9cb0;
+}
+:root[data-tool="manga"] {
+  --color-accent: #f5b14c;
+  --color-accent-hover: #f8c577;
+}
 
-/* Ambient orbs fixed behind the whole app */
+/* Atmosphere: one faint glow of the tool's hue at the top of the page, like light leaking from a display */
 .ambient {
   position: fixed;
   inset: 0;
@@ -75,66 +121,6 @@
   overflow: hidden;
   pointer-events: none;
 }
-/*
-  Per-tool "spaces" (Arc-style): the whole app re-tints by tool.
-  Budget = Forest (default), Jobs = Ink. Set via <html data-tool="...">.
-*/
-:root {
-  --panel-1: #2a5f49;
-  --panel-2: #1f4d3a;
-  --panel-3: #163829;
-  --orb-1: #cfe2d5;
-  --orb-2: #e3ead2;
-  --orb-3: #d6e6dc;
-}
-:root[data-tool="news"] {
-  --color-accent: #6e2a35;
-  --color-accent-hover: #57202a;
-  --color-accent-soft: #f1e2e4;
-  --panel-1: #8a3a46;
-  --panel-2: #6e2a35;
-  --panel-3: #4a1a22;
-  --orb-1: #ecd9db;
-  --orb-2: #efe4dc;
-  --orb-3: #e8dadd;
-}
-/* Lobby (intro, PIN, tool chooser): neutral Graphite, so only the tool cards carry colour */
-:root:not([data-tool]) {
-  --color-accent: #2b2d2a;
-  --color-accent-hover: #1d1f1c;
-  --color-accent-soft: #e6e6e1;
-  --orb-1: #e2e1da;
-  --orb-2: #eceae3;
-  --orb-3: #deddd6;
-}
-:root[data-tool="jobs"] {
-  --color-accent: #2b3a7a;
-  --color-accent-hover: #222f63;
-  --color-accent-soft: #dfe4f3;
-  --panel-1: #3c4c96;
-  --panel-2: #2b3a7a;
-  --panel-3: #1c2654;
-  --orb-1: #d3daf0;
-  --orb-2: #e4dff1;
-  --orb-3: #d9e0f2;
-}
-/* Manga = Ochre, like old newsprint */
-:root[data-tool="manga"] {
-  --color-accent: #7f4d12;
-  --color-accent-hover: #663d0d;
-  --color-accent-soft: #f3e5d2;
-  --panel-1: #9c6220;
-  --panel-2: #7f4d12;
-  --panel-3: #54320a;
-  --orb-1: #efdfc8;
-  --orb-2: #eee6d4;
-  --orb-3: #eadac3;
-}
-
-/*
-  Soft light shapes. A radial mask fades a flat colour to nothing at the edge: it looks like a
-  heavy blur but costs nothing per frame (a live 90px blur filter on a moving element repaints constantly).
-*/
 .ambient .orb,
 .glow-panel .light {
   -webkit-mask-image: radial-gradient(closest-side, #000 0%, rgb(0 0 0 / 0.7) 25%, rgb(0 0 0 / 0.38) 50%, rgb(0 0 0 / 0.14) 72%, rgb(0 0 0 / 0.04) 88%, transparent 100%);
@@ -147,34 +133,48 @@
   will-change: transform;
 }
 
-/* Film grain over everything (fixed, non-interactive, so it never repaints on scroll) */
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  /* No blend mode: blending a full-screen layer forces a repaint of everything under it while scrolling */
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Frosted surface used by cards, bars and sheets */
+/*
+  The "keyboard key" surface used by cards, bars, sheets and controls: a dark fill one step up from the canvas,
+  a faint top highlight, a hairline ring, and a shadowed bottom edge, so it reads pressed rather than floating.
+*/
 .frost {
-  background: rgb(255 255 255 / 0.62);
+  background: rgb(7 8 10 / 0.86);
+  box-shadow:
+    rgb(255 255 255 / 0.06) 0 1px 0 0 inset,
+    rgb(255 255 255 / 0.08) 0 0 0 1px,
+    rgb(0 0 0 / 0.35) 0 -1px 0 0 inset;
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
 }
 @media (prefers-reduced-transparency: reduce) {
-  .frost { background: #ffffff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .frost { background: var(--color-card); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 
-/* The deep forest hero panel with soft glowing shapes, Mercury-illustration style */
+/* Floating glass navigation bar */
+.glass-bar {
+  background: rgb(4 5 6 / 0.72);
+  border: 1px solid var(--color-line-strong);
+  backdrop-filter: blur(48px) saturate(150%);
+  -webkit-backdrop-filter: blur(48px) saturate(150%);
+}
+
+/*
+  Hero panel: Raycast's one cinematic moment. Near-black, with the tool's hue leaking in as a soft
+  diagonal glow, and the key edge around it.
+*/
 .glow-panel {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: radial-gradient(120% 140% at 0% 0%, var(--panel-1) 0%, var(--panel-2) 45%, var(--panel-3) 100%);
-  color: #f1f4ee;
+  background:
+    radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--panel-accent, var(--color-accent)) 26%, transparent) 0%, transparent 60%),
+    radial-gradient(70% 90% at 0% 100%, color-mix(in srgb, var(--panel-accent, var(--color-accent)) 12%, transparent) 0%, transparent 65%),
+    var(--color-card);
+  box-shadow:
+    rgb(255 255 255 / 0.07) 0 1px 0 0 inset,
+    rgb(255 255 255 / 0.09) 0 0 0 1px,
+    rgb(0 0 0 / 0.4) 0 -1px 0 0 inset;
+  color: var(--color-ink);
 }
 .glow-panel .light {
   position: absolute;
@@ -182,32 +182,38 @@
   border-radius: 9999px;
   pointer-events: none;
 }
-.glow-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.22;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 .glass-on-dark {
-  background: rgb(255 255 255 / 0.07);
-  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(255 255 255 / 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
 
-/* Primary action: on hover the forest fill deepens and gives off a faint light, never a hard shadow */
+/* Primary action: neutral Mist fill with Iron text; hover lifts it slightly, never a coloured glow */
 .glow-button {
-  transition: background-color 200ms ease, box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: var(--color-mist);
+  color: #1b1c1e;
+  box-shadow: rgb(0 0 0 / 0.03) 0 7px 3px 0, rgb(0 0 0 / 0.25) 0 4px 4px 0, rgb(255 255 255 / 0.6) 0 1px 0 0 inset;
+  transition: background-color 200ms ease, box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms ease;
 }
 .glow-button:hover {
-  background-color: var(--color-accent-hover);
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-accent) 8%, transparent),
-    0 10px 28px -10px color-mix(in srgb, var(--color-accent) 55%, transparent);
+  background-color: #ffffff;
+}
+
+/* Keyboard hint, like ⌘K */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+  background: var(--color-raised);
+  box-shadow: rgb(255 255 255 / 0.08) 0 0 0 1px, rgb(0 0 0 / 0.5) 0 -1px 0 0 inset;
 }
 
 @keyframes drift {
@@ -244,7 +250,7 @@
   to { background-position: 200px 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, var(--color-raised) 0%, #f5f5ef 50%, var(--color-raised) 100%);
+  background: linear-gradient(90deg, var(--color-raised) 0%, #18191b 50%, var(--color-raised) 100%);
   background-size: 400px 100%;
   animation: shimmer 1.4s linear infinite;
   border-radius: 8px;

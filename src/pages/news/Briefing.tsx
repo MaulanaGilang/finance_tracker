@@ -35,7 +35,7 @@ export function NewsBriefing() {
           title="No stories yet"
           body="News is fetched every 2 hours. You can also pull it now."
           action={
-            <button onClick={() => refreshNews()} disabled={newsRefreshing} className="glow-button h-11 rounded-pill bg-accent px-5 text-white">
+            <button onClick={() => refreshNews()} disabled={newsRefreshing} className="glow-button h-11 rounded-pill px-5">
               {newsRefreshing ? 'Refreshing…' : 'Refresh now'}
             </button>
           }

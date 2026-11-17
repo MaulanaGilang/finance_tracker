@@ -96,7 +96,7 @@ export function CityPicker({ id, value, onChange }: { id: string; value: string;
         <CaretDown size={13} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted" />
       )}
       {open && (
-        <ul id={listId} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-10 max-h-64 overflow-y-auto rounded-[16px] border border-line bg-card p-1.5 shadow-[0_12px_32px_-12px_rgba(28,33,30,0.25)]">
+        <ul id={listId} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-10 max-h-64 overflow-y-auto rounded-[16px] border border-line-strong bg-raised p-1.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]">
           {options.length ? (
             options.map((o, i) => (
               <li

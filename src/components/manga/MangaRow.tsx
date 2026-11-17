@@ -87,7 +87,7 @@ export function Latest({ manga }: { manga: Manga }) {
     )
   return (
     <span className="inline-flex items-center gap-2" title={manga.latest_source ? `From ${SOURCE_LABEL[manga.latest_source]}` : undefined}>
-      {badge && <span className="rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] text-white">{badge}</span>}
+      {badge && <span className="rounded-pill bg-accent px-2 py-0.5 text-[12px] font-[480] text-canvas">{badge}</span>}
       <span className="tabular-nums">{chapterLabel(manga.latest_chapter)}</span>
     </span>
   )

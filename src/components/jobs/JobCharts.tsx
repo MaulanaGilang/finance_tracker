@@ -5,9 +5,9 @@ import { EASE_OUT } from '../../lib/motion'
 import type { Breakdown, FlowGraph, FlowNode } from '../../lib/jobs'
 import { cx } from '../ui'
 
-const INK = '#2B3A7A'
-const GRID = '#E4E4DC'
-const TICK = { fill: '#616862', fontSize: 12 }
+const INK = '#63a1ff'
+const GRID = '#1b1c1e'
+const TICK = { fill: '#6a6b6c', fontSize: 12 }
 
 /** Applications sent per week: one soft ink area, drawn in left to right on mount */
 export function WeeklyChart({ data }: { data: { key: string; label: string; count: number }[] }) {
@@ -32,10 +32,10 @@ export function WeeklyChart({ data }: { data: { key: string; label: string; coun
           <XAxis dataKey="label" tickLine={false} axisLine={false} tick={TICK} dy={6} interval="preserveStartEnd" />
           <YAxis tickLine={false} axisLine={false} tick={TICK} allowDecimals={false} width={28} />
           <Tooltip
-            cursor={{ stroke: '#C9CBC2', strokeDasharray: '3 3' }}
+            cursor={{ stroke: '#363739', strokeDasharray: '3 3' }}
             content={({ active, payload }) =>
               active && payload?.length ? (
-                <div className="frost rounded-[12px] border border-white/80 px-3.5 py-2.5 text-[13px] ring-1 ring-line/60">
+                <div className="frost rounded-[12px] px-3.5 py-2.5 text-[13px]">
                   <p className="font-[480]">Week of {String((payload[0].payload as { label: string }).label)}</p>
                   <p className="tabular-nums text-muted">
                     {Number(payload[0].value)} {Number(payload[0].value) === 1 ? 'application' : 'applications'}
@@ -143,10 +143,10 @@ export function FlowSankey({ data }: { data: FlowGraph }) {
     return (
       <g>
         <rect x={x} y={y} width={width} height={Math.max(h, 2)} rx={2} fill={payload.color} />
-        <text x={labelX} y={midY - 4} textAnchor={anchor} fontSize={13} fill="#616862">
+        <text x={labelX} y={midY - 4} textAnchor={anchor} fontSize={13} fill="#9c9c9d">
           {payload.name}
         </text>
-        <text x={labelX} y={midY + 16} textAnchor={anchor} fontSize={18} fill="#1C211E" style={{ fontFamily: 'var(--font-display)', fontStretch: '112%', fontWeight: 480 }}>
+        <text x={labelX} y={midY + 16} textAnchor={anchor} fontSize={18} fill="#f4f4f5" style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}>
           {payload.value}
         </text>
       </g>

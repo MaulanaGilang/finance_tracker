@@ -14,6 +14,7 @@ import {
   GearSix,
   Kanban,
   ListBullets,
+  MagnifyingGlass,
   Plus,
   Sparkle,
   SquaresFour,
@@ -33,7 +34,7 @@ export const TOOLS = {
   manga: { name: 'Manga', icon: BookOpenText, home: '/manga' },
 } as const
 
-const NAV = {
+export const NAV = {
   budget: [
     { to: '/budget', label: 'Dashboard', mobile: 'Dashboard', icon: SquaresFour },
     { to: '/budget/transactions', label: 'Transactions', mobile: 'History', icon: ListBullets },
@@ -69,22 +70,48 @@ export function useToolTheme(tool: Tool | null) {
   useEffect(() => {
     if (tool) document.documentElement.dataset.tool = tool
     else delete document.documentElement.dataset.tool
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#F7F7F2')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#040506')
   }, [tool])
 }
 
-/** Two concentric rings, same mark as the app icon */
+/** Two concentric rings in Ledger's coral, the one brand mark (it doesn't change with the tool) */
 export function Logo() {
   return (
-    <span className="flex items-center gap-2.5">
-      <span className="flex size-8 items-center justify-center rounded-full bg-accent text-canvas transition-colors duration-500">
-        <svg width="18" height="18" viewBox="0 0 44 44" aria-hidden>
-          <circle cx="22" cy="22" r="17" fill="none" stroke="currentColor" strokeWidth="3.2" />
-          <circle cx="22" cy="22" r="8.5" fill="none" stroke="currentColor" strokeWidth="3.2" />
+    <span className="flex items-center gap-2">
+      <span className="flex size-7 items-center justify-center rounded-[8px] bg-coral text-canvas shadow-[inset_0_1px_0_rgb(255_255_255/0.35)]">
+        <svg width="16" height="16" viewBox="0 0 44 44" aria-hidden>
+          <circle cx="22" cy="22" r="17" fill="none" stroke="currentColor" strokeWidth="3.6" />
+          <circle cx="22" cy="22" r="8.5" fill="none" stroke="currentColor" strokeWidth="3.6" />
         </svg>
       </span>
-      <span className="font-display text-[18px]">Ledger</span>
+      <span className="text-[15px] font-medium tracking-[0.01em]">Ledger</span>
     </span>
+  )
+}
+
+/** Opens the quick launcher (Ctrl / ⌘ + K) */
+export const openLauncher = () => window.dispatchEvent(new Event('ledger:launcher'))
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+export const launcherKey = isMac ? '⌘K' : 'Ctrl K'
+
+function LauncherButton({ compact = false }: { compact?: boolean }) {
+  return (
+    <button
+      onClick={openLauncher}
+      aria-label="Search tools and actions"
+      className={cx(
+        'inline-flex items-center gap-2 rounded-[8px] text-[13px] text-muted transition-colors hover:bg-raised hover:text-ink',
+        compact ? 'size-9 justify-center' : 'h-8 pl-2.5 pr-1.5',
+      )}
+    >
+      <MagnifyingGlass size={compact ? 18 : 15} />
+      {!compact && (
+        <>
+          <span>Search</span>
+          <span className="kbd">{launcherKey}</span>
+        </>
+      )}
+    </button>
   )
 }
 
@@ -95,11 +122,11 @@ function ToolSwitch({ tool }: { tool: Tool }) {
     <Link
       to="/"
       title="Switch tool"
-      className="frost inline-flex h-9 items-center gap-2 rounded-pill border border-white/80 pl-2.5 pr-3 text-[14px] ring-1 ring-line/60 transition-colors hover:text-accent"
+      className="inline-flex h-8 items-center gap-2 rounded-[8px] bg-raised pl-2 pr-2.5 text-[13px] font-medium shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_0_0_1px_rgb(255_255_255/0.06)] transition-colors hover:bg-[#18191b]"
     >
-      <Icon size={16} className="text-accent" />
+      <Icon size={15} weight="fill" className="text-accent" />
       <span className="max-w-[9rem] truncate">{name}</span>
-      <ArrowsLeftRight size={14} className="text-muted" />
+      <ArrowsLeftRight size={13} className="text-faint" />
     </Link>
   )
 }
@@ -117,48 +144,57 @@ export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }
 
   return (
     <div className="min-h-[100dvh]">
-      {/* Desktop / tablet top bar */}
-      <header className="sticky top-0 z-20 hidden border-b border-white/60 bg-canvas/55 backdrop-blur-xl backdrop-saturate-150 md:block">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 px-8">
-          <div className="flex items-center gap-4">
+      {/* Desktop / tablet: Raycast's floating glass bar */}
+      <header className="sticky top-3 z-20 hidden px-8 md:block">
+        <div className="glass-bar mx-auto flex h-12 max-w-[1200px] items-center justify-between gap-4 rounded-[12px] pl-3 pr-2">
+          <div className="flex items-center gap-3">
             <Link to="/" aria-label="All tools">
               <Logo />
             </Link>
+            <span className="h-4 w-px bg-line-strong" aria-hidden />
             <ToolSwitch tool={tool} />
           </div>
-          <nav aria-label="Main" className="flex items-center gap-1">
+          <nav aria-label="Main" className="flex items-center gap-0.5">
             {nav.map(({ to, label }) => (
-              <NavLink key={to} to={to} end={to === TOOLS[tool].home} className="relative rounded-pill px-4 py-2 text-[15px]">
+              <NavLink key={to} to={to} end={to === TOOLS[tool].home} className="relative rounded-[8px] px-3 py-1.5 text-[13px] font-medium">
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <motion.span layoutId="nav-pill" transition={pillSpring} className="absolute inset-0 rounded-pill bg-accent-soft" />
+                      <motion.span
+                        layoutId="nav-pill"
+                        transition={pillSpring}
+                        className="absolute inset-0 rounded-[8px] bg-raised shadow-[inset_0_1px_0_rgb(255_255_255/0.07),0_0_0_1px_rgb(255_255_255/0.06)]"
+                      />
                     )}
-                    <span className={cx('relative transition-colors', isActive ? 'font-[480] text-accent' : 'text-muted hover:text-ink')}>
-                      {label}
-                    </span>
+                    <span className={cx('relative transition-colors', isActive ? 'text-ink' : 'text-muted hover:text-ink')}>{label}</span>
                   </>
                 )}
               </NavLink>
             ))}
           </nav>
-          <motion.button
-            onClick={add}
-            whileTap={{ scale: 0.97 }}
-            className="glow-button inline-flex h-10 items-center gap-2 rounded-pill bg-accent px-5 text-[15px] text-white"
-          >
-            {isNews ? <ArrowsClockwise size={16} weight="bold" className={newsRefreshing ? 'animate-spin' : undefined} /> : <Plus size={16} weight="bold" />}
-            {isNews ? (newsRefreshing ? 'Refreshing' : 'Refresh') : 'Add'}
-          </motion.button>
+          <div className="flex items-center gap-1.5">
+            <LauncherButton />
+            <motion.button
+              onClick={add}
+              whileTap={{ scale: 0.97 }}
+              className="glow-button inline-flex h-8 items-center gap-1.5 rounded-[8px] px-3 text-[13px] font-medium"
+            >
+              {isNews ? <ArrowsClockwise size={14} weight="bold" className={newsRefreshing ? 'animate-spin' : undefined} /> : <Plus size={14} weight="bold" />}
+              {isNews ? (newsRefreshing ? 'Refreshing' : 'Refresh') : 'Add'}
+            </motion.button>
+          </div>
         </div>
       </header>
 
       {/* Mobile top bar */}
-      <header className="flex h-14 items-center justify-between px-4 pt-[env(safe-area-inset-top)] md:hidden">
+      <header className="flex h-14 items-center justify-between gap-2 px-4 pt-[env(safe-area-inset-top)] md:hidden">
         <Link to="/" aria-label="All tools">
           <Logo />
         </Link>
-        <ToolSwitch tool={tool} />
+        <div className="flex items-center gap-1">
+          <LauncherButton compact />
+          <ToolSwitch tool={tool} />
+        </div>
       </header>
 
       <main className="mx-auto max-w-[1200px] px-4 pb-32 pt-4 md:px-8 md:pb-16 md:pt-10">{children}</main>
@@ -166,7 +202,7 @@ export function AppShell({ tool, children }: { tool: Tool; children: ReactNode }
       {/* Mobile bottom tab bar */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-white/70 bg-canvas/60 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-line-strong/70 bg-canvas/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
       >
         <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-2">
           {mobileNav.slice(0, 2).map((item) => (
@@ -196,7 +232,7 @@ function AddFab({ onClick, label, icon }: { onClick: () => void; label: string; 
       whileTap={{ scale: 0.9 }}
       transition={{ type: 'spring', stiffness: 500, damping: 26 }}
       aria-label={label}
-      className="glow-button relative flex size-12 items-center justify-center rounded-full bg-accent text-white"
+      className="glow-button relative flex size-12 items-center justify-center rounded-full"
     >
       <AnimatePresence>
         {pulse > 0 && (
@@ -221,10 +257,10 @@ function TabLink({ item: { to, mobile, icon: Icon }, end }: { item: NavItem; end
       {({ isActive }) => (
         <>
           {isActive && (
-            <motion.span layoutId="tab-pill" transition={pillSpring} className="absolute -top-0.5 h-8 w-12 rounded-pill bg-accent-soft" />
+            <motion.span layoutId="tab-pill" transition={pillSpring} className="absolute -top-0.5 h-8 w-12 rounded-[8px] bg-raised shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]" />
           )}
-          <Icon size={22} weight={isActive ? 'fill' : 'regular'} className={cx('relative mt-0.5', isActive ? 'text-accent' : 'text-muted')} />
-          <span className={cx('relative', isActive ? 'font-[480] text-accent' : 'text-muted')}>{mobile}</span>
+          <Icon size={22} weight={isActive ? 'fill' : 'regular'} className={cx('relative mt-0.5', isActive ? 'text-accent' : 'text-faint')} />
+          <span className={cx('relative', isActive ? 'font-medium text-ink' : 'text-faint')}>{mobile}</span>
         </>
       )}
     </NavLink>

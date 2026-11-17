@@ -1,13 +1,12 @@
-/** Blurred light sources behind the app plus a film-grain layer above it. Orb colors follow the active tool. */
+/**
+ * Raycast-style atmosphere: the canvas stays near-black, with one faint glow of the active tool's hue
+ * leaking in from the top (coral in the lobby), like light from a display. No grain, no drifting blobs.
+ */
 export function Atmosphere() {
   return (
-    <>
-      <div className="ambient" aria-hidden>
-        <div className="orb drift" style={{ width: 620, height: 620, left: '-12%', top: '-18%', backgroundColor: 'var(--orb-1)', opacity: 0.9 }} />
-        <div className="orb drift-slow" style={{ width: 520, height: 520, right: '-10%', top: '8%', backgroundColor: 'var(--orb-2)', opacity: 0.85 }} />
-        <div className="orb drift" style={{ width: 560, height: 560, left: '30%', bottom: '-30%', backgroundColor: 'var(--orb-3)', opacity: 0.7 }} />
-      </div>
-      <div className="grain" aria-hidden />
-    </>
+    <div className="ambient" aria-hidden>
+      <div className="orb" style={{ width: 900, height: 520, left: '50%', top: -330, marginLeft: -450, backgroundColor: 'var(--color-accent)', opacity: 0.13 }} />
+      <div className="orb drift-slow" style={{ width: 520, height: 420, right: '-14%', top: -200, backgroundColor: '#63a1ff', opacity: 0.05 }} />
+    </div>
   )
 }
