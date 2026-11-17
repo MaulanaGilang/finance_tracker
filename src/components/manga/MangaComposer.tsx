@@ -47,6 +47,9 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  // Matches the weekly check: series that ended or were cancelled are skipped once checked
+  const ended = !!editing && (editing.series_status === 'completed' || editing.series_status === 'cancelled') && !!editing.checked_at && !editing.skip_check
+
   async function save() {
     if (!title.trim()) return setError('Give it a title.')
     const ch = parseChapter(lastRead)
@@ -136,13 +139,14 @@ function MangaSheet({ onClose }: { onClose: () => void }) {
 
         <MatchPanel manga={editing} title={title} pick={pick} onPick={setPick} />
 
-        {/* A finished series won't get new chapters: the weekly check leaves it alone once its last chapter is known */}
-        {editing && status === 'reading' && !pick && editing.series_status === 'completed' && editing.checked_at && !editing.skip_check && (
+        {/* A finished or cancelled series won't get new chapters: the weekly check leaves it alone once its last chapter is known */}
+        {editing && status === 'reading' && !pick && ended && (
           <p className="-mt-2 px-1 text-[13px] leading-[1.5] text-muted">
-            This series has ended, so the weekly check skips it. Use the refresh button above if a late translation comes out.
+            This series has {editing.series_status === 'cancelled' ? 'been cancelled' : 'ended'}, so the weekly check skips it. Use the refresh
+            button above if a late translation comes out.
           </p>
         )}
-        {editing && status === 'reading' && !pick && !(editing.series_status === 'completed' && editing.checked_at && !editing.skip_check) && (
+        {editing && status === 'reading' && !pick && !ended && (
           <label className="-mt-2 flex cursor-pointer items-start gap-3 px-1 text-[14px] leading-[1.5]">
             <input type="checkbox" checked={track} onChange={(e) => setTrack(e.target.checked)} className="mt-1 size-4 accent-[var(--color-accent)]" />
             <span>

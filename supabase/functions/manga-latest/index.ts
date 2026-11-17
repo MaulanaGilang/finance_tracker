@@ -425,11 +425,12 @@ Deno.serve(async (req) => {
     }
 
     // Weekly batch: titles you're reading that weren't checked in the last few days. Skipped: titles you finished
-    // (status completed), flagged ones, and series that have ended once their last chapter is known (no new chapters
-    // will come; a finished series never checked yet still gets its one check).
+    // (status completed), flagged ones, and series that have ended or were cancelled once their last chapter is known
+    // (no new chapters will come; such a series never checked yet still gets its one check).
     const since = new Date(Date.now() - RECHECK_DAYS * 864e5).toISOString()
     const stale = `or(checked_at.is.null,checked_at.lt.${since})`
-    const due = `and(series_status.is.null,${stale}),and(series_status.neq.completed,${stale}),and(series_status.eq.completed,checked_at.is.null)`
+    const ended = '(completed,cancelled)'
+    const due = `and(series_status.is.null,${stale}),and(series_status.not.in.${ended},${stale}),and(series_status.in.${ended},checked_at.is.null)`
     const { data: rows, error } = await db
       .from('manga_titles')
       .select(COLS)
