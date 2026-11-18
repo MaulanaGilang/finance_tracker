@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#1F4D3A"/>
-  <circle cx="256" cy="256" r="132" fill="none" stroke="#F7F7F2" stroke-width="22"/>
-  <circle cx="256" cy="256" r="66" fill="none" stroke="#F7F7F2" stroke-width="22"/>
+  <!-- Same mark as the header logo: coral rounded square, two near-black rings (bolder, so they hold up at 16px in a tab) -->
+  <rect width="512" height="512" rx="146" fill="#ff6363"/>
+  <circle cx="256" cy="256" r="124" fill="none" stroke="#040506" stroke-width="40"/>
+  <circle cx="256" cy="256" r="52" fill="none" stroke="#040506" stroke-width="40"/>
 </svg>
