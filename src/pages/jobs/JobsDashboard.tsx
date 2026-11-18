@@ -1,15 +1,20 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { motion } from 'motion/react'
-import { ArrowRight, CheckCircle, HourglassMedium } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'motion/react'
+import { ArrowCounterClockwise, ArrowRight, ArrowUpRight, CheckCircle, EnvelopeSimple, HourglassMedium, Plus, X } from '@phosphor-icons/react'
 import { HeroPanel } from '../../components/HeroPanel'
 import { AnimatedNumber } from '../../components/motion-primitives/animated-number'
 import { BreakdownBars, FlowSankey, WeeklyChart } from '../../components/jobs/JobCharts'
 import { StatusPill } from '../../components/jobs/Status'
-import { Button, Card, CardTitle, Empty, Skeleton, cx } from '../../components/ui'
+import { Button, Card, CardTitle, Empty, IconButton, Skeleton, cx } from '../../components/ui'
+import { friendlyError } from '../../lib/api'
+import { timeAgo } from '../../lib/news'
 import {
   CATEGORY,
   FLEXIBILITY,
+  STATUS,
+  senderName,
+  type JobUpdate,
   breakdown,
   flowGraph,
   formatJuta,
@@ -88,6 +93,10 @@ export function JobsDashboard() {
       </motion.div>
 
       <motion.div variants={itemVariants}>
+        <EmailUpdates />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
         <Card>
           <CardTitle>Application flow</CardTitle>
           <FlowSankey data={d.flow} />
@@ -160,6 +169,119 @@ function HeroStat({ label, value }: { label: string; value: number }) {
       <p className="mb-1.5 truncate text-[13px] text-white/70">{label}</p>
       <AnimatedNumber value={value} springOptions={numberSpring} className="block font-display text-[24px] sm:text-[32px]" />
     </div>
+  )
+}
+
+/** Recruiting emails from the last 30 days: who moved you forward, who said no, and emails about applications not in your list */
+function EmailUpdates() {
+  const { jobUpdates } = useStore()
+  const passed = jobUpdates.filter((u) => u.outcome === 'updated' && u.kind !== 'rejected').length
+  const rejected = jobUpdates.filter((u) => u.outcome === 'updated' && u.kind === 'rejected').length
+  return (
+    <Card>
+      <CardTitle
+        action={
+          jobUpdates.length > 0 && (
+            <span className="flex items-center gap-1.5 text-[12px] font-medium tabular-nums">
+              {passed > 0 && <span className="rounded-[6px] bg-income/15 px-2 py-0.5 text-income">{passed} passed</span>}
+              {rejected > 0 && <span className="rounded-[6px] bg-expense/15 px-2 py-0.5 text-expense">{rejected} rejected</span>}
+            </span>
+          )
+        }
+      >
+        From your email
+      </CardTitle>
+      {jobUpdates.length === 0 ? (
+        <p className="flex items-start gap-3 text-[14px] leading-[1.5] text-muted">
+          <EnvelopeSimple size={18} className="mt-0.5 shrink-0" />
+          Nothing new in the last 30 days. Interview invites, tests, offers and rejections in your Gmail update your applications here each morning.
+        </p>
+      ) : (
+        <ul className="-mx-2 flex flex-col sm:-mx-3">
+          <AnimatePresence initial={false}>
+            {jobUpdates.map((u) => (
+              <EmailUpdateRow key={u.id} u={u} />
+            ))}
+          </AnimatePresence>
+        </ul>
+      )}
+    </Card>
+  )
+}
+
+function EmailUpdateRow({ u }: { u: JobUpdate }) {
+  const { undoJobUpdate, dismissJobUpdate, addJobFromUpdate, jobs, openJobComposer } = useStore()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const matched = u.outcome === 'updated'
+  const rejected = u.kind === 'rejected'
+  const job = matched ? jobs.find((j) => j.id === u.job_id) : undefined
+  const company = matched ? u.company : u.guessed_company
+  const position = matched ? u.position : u.guessed_position
+
+  const run = (fn: () => Promise<unknown>) => async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await fn()
+    } catch (e) {
+      setError(friendlyError(e).includes('changed_since') ? 'Changed since, so it was left as it is.' : friendlyError(e))
+      setBusy(false)
+    }
+  }
+
+  return (
+    <motion.li
+      layout
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0, transition: { duration: 0.25, ease: EASE_OUT } }}
+      exit={{ opacity: 0, height: 0, transition: { duration: 0.2, ease: EASE_OUT } }}
+      className="overflow-hidden"
+    >
+      <div className="flex items-start gap-3 rounded-[10px] px-2 py-3 sm:px-3">
+        <span
+          className={cx(
+            'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full',
+            !matched ? 'bg-raised text-muted' : rejected ? 'bg-expense/15 text-expense' : 'bg-income/15 text-income',
+          )}
+          aria-hidden
+        >
+          {!matched ? <EnvelopeSimple size={16} /> : rejected ? <X size={16} weight="bold" /> : <ArrowUpRight size={16} weight="bold" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {job ? (
+              <button onClick={() => openJobComposer(job)} className="truncate text-[14px] font-medium hover:underline">
+                {company}
+              </button>
+            ) : (
+              <span className="truncate text-[14px] font-medium">{company ?? senderName(u.sender)}</span>
+            )}
+            <span className={cx('text-[13px]', !matched ? 'text-muted' : rejected ? 'text-expense' : 'text-income')}>
+              {!matched ? `Not in your list · ${STATUS[u.kind].label}` : rejected ? 'Rejected' : `Passed to ${STATUS[u.kind].label}`}
+            </span>
+          </p>
+          <p className="truncate text-[13px] text-muted">
+            {[position, `“${u.subject}”`, timeAgo(u.received_at)].filter(Boolean).join(' · ')}
+          </p>
+          {error && <p className="mt-1 text-[12px] text-expense">{error}</p>}
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          {matched ? (
+            <Button variant="ghost" className="h-8 px-3 text-[13px]" disabled={busy} onClick={() => void run(() => undoJobUpdate(u.id))()} title={`Back to ${u.prev_status ? STATUS[u.prev_status].label : 'before'}`}>
+              <ArrowCounterClockwise size={14} /> Undo
+            </Button>
+          ) : (
+            <Button variant="ghost" className="h-8 px-3 text-[13px]" disabled={busy} onClick={() => void run(() => addJobFromUpdate(u))()}>
+              <Plus size={14} /> Add
+            </Button>
+          )}
+          <IconButton label="Dismiss" className="size-8 text-muted" disabled={busy} onClick={() => void run(() => dismissJobUpdate(u.id))()}>
+            <X size={14} />
+          </IconButton>
+        </div>
+      </div>
+    </motion.li>
   )
 }
 

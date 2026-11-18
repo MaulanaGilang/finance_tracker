@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { CompanyReview, Job, JobInput } from './jobs'
+import type { CompanyReview, Job, JobInput, JobUpdate } from './jobs'
 import type { JobLead } from './leads'
 import type { Manga, MangaCandidate, MangaInput } from './manga'
 import type { NewsArticle } from './news'
@@ -120,6 +120,12 @@ export const api = {
   setJobLeadStatus: (token: string, id: string, status: 'new' | 'skipped') => rpc<void>('set_job_lead_status', { p_token: token, p_id: id, p_status: status }),
   /** One batch of the company-board scan (each company at most once a day) */
   scanJobs: () => invoke<{ scanned: number; added: Record<string, number | string>; remaining: number }>('job-scout', { action: 'scan' }),
+
+  /** Status changes made from recruiting emails, and emails no application matched (last 30 days) */
+  getJobUpdates: (token: string) => rpc<{ updates: JobUpdate[]; last_email: string | null }>('get_job_updates', { p_token: token }),
+  /** Put the application back as it was before the email changed it */
+  undoJobUpdate: async (token: string, id: string) => toJob(await rpc<Job>('undo_job_update', { p_token: token, p_id: id })),
+  dismissJobUpdate: (token: string, id: string, added = false) => rpc<void>('dismiss_job_update', { p_token: token, p_id: id, p_added: added }),
 
   getNews: (token: string) => rpc<NewsArticle[]>('get_news', { p_token: token, p_days: 7 }),
   setNewsSaved: (token: string, id: number, saved: boolean) => rpc<void>('set_news_saved', { p_token: token, p_id: id, p_saved: saved }),

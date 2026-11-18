@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { demoCategories, demoJobs, demoLeads, demoManga, demoNews, demoReviews, demoSaveJob, demoSaveManga, demoTransactions, isDemo } from './demo'
+import { demoCategories, demoJobs, demoJobUpdates, demoLeads, demoManga, demoNews, demoReviews, demoSaveJob, demoSaveManga, demoTransactions, isDemo } from './demo'
 import { todayISO } from './format'
 import type { JobLead, LeadsInfo } from './leads'
 import type { Manga, MangaInput } from './manga'
 import { needsDetails, type NewsArticle } from './news'
 import { api, ApiError, type Category, type CategoryInput, type Transaction, type TransactionInput } from './api'
-import { normalizeCompany, reviewIndex, type CompanyReview, type Job, type JobInput } from './jobs'
+import { normalizeCompany, reviewIndex, type CompanyReview, type Job, type JobInput, type JobUpdate } from './jobs'
 
 type Status = 'checking' | 'setup' | 'locked' | 'ready' | 'offline'
 
@@ -59,6 +59,15 @@ interface Store {
   setLeadSkipped: (id: string, skipped: boolean) => Promise<void>
   /** One batch of the company-board scan; returns a short report */
   scanJobs: () => Promise<string>
+
+  /** Status changes made from recruiting emails, and emails no application matched */
+  jobUpdates: JobUpdate[]
+  /** Put the application back as it was before the email changed it */
+  undoJobUpdate: (id: string) => Promise<void>
+  /** Hide an update from the dashboard */
+  dismissJobUpdate: (id: string) => Promise<void>
+  /** An email about an application that isn't in your list: add it, at the stage the email says */
+  addJobFromUpdate: (u: JobUpdate) => Promise<Job>
 
   manga: Manga[]
   saveManga: (m: MangaInput) => Promise<Manga>
@@ -144,6 +153,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [manga, setManga] = useState<Manga[]>([])
   const [leads, setLeads] = useState<JobLead[]>([])
   const [leadsInfo, setLeadsInfo] = useState<LeadsInfo | null>(null)
+  const [jobUpdates, setJobUpdates] = useState<JobUpdate[]>([])
   const [mangaComposer, setMangaComposer] = useState<{ open: boolean; editing: Manga | null }>({ open: false, editing: null })
   const navigate = useNavigate()
   const [jobComposer, setJobComposer] = useState<{ open: boolean; editing: Job | null }>({ open: false, editing: null })
@@ -167,6 +177,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setManga([])
     setLeads([])
     setLeadsInfo(null)
+    setJobUpdates([])
     setNews([])
     setReviews([])
     try {
@@ -199,6 +210,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             setLeadsInfo(info)
           })
           .catch(() => {})
+        // Same for updates from recruiting emails
+        api
+          .getJobUpdates(t)
+          .then((r) => setJobUpdates(r.updates))
+          .catch(() => {})
         setCategories(cats)
         setTransactions(txs)
         setJobs(js)
@@ -228,6 +244,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setNews(demoNews())
       setManga(demoManga())
       setLeads(demoLeads())
+      setJobUpdates(demoJobUpdates())
       setLeadsInfo({ companies: 23, last_scan: new Date(Date.now() - 5 * 3600e3).toISOString(), last_email: new Date(Date.now() - 2 * 3600e3).toISOString() })
       setStatus('ready')
       return
@@ -442,6 +459,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return `Checked ${r.scanned} companies, ${added} new ${added === 1 ? 'job' : 'jobs'}.${r.remaining ? ` ${r.remaining} companies left: run it again to continue.` : ''}`
       },
 
+      jobUpdates,
+      undoJobUpdate: async (id) => {
+        const u = jobUpdates.find((x) => x.id === id)
+        if (isDemo) {
+          if (u?.job_id && u.prev_status) setJobs((prev) => prev.map((j) => (j.id === u.job_id ? { ...j, status: u.prev_status! } : j)))
+        } else {
+          const job = await guarded((t) => api.undoJobUpdate(t, id))
+          setJobs((prev) => prev.map((j) => (j.id === job.id ? job : j)))
+        }
+        setJobUpdates((prev) => prev.filter((x) => x.id !== id))
+      },
+      dismissJobUpdate: async (id) => {
+        const before = jobUpdates
+        setJobUpdates((prev) => prev.filter((x) => x.id !== id))
+        if (isDemo) return
+        try {
+          await guarded((t) => api.dismissJobUpdate(t, id))
+        } catch (e) {
+          setJobUpdates(before)
+          throw e
+        }
+      },
+      addJobFromUpdate: async (u) => {
+        const input: JobInput = {
+          position: u.guessed_position ?? 'Unknown position',
+          company: u.guessed_company ?? 'Unknown company',
+          location: '',
+          category: 'full_time',
+          flexibility: 'onsite',
+          status: u.kind,
+          platform: '',
+          link: '',
+          salary_min: null,
+          salary_max: null,
+          // You applied before the email came; the email's day is the closest date known
+          applied_date: u.received_at.slice(0, 10),
+          notes: `From email: ${u.subject}`,
+        }
+        const job = isDemo ? demoSaveJob(jobs, input) : await guarded((t) => api.saveJob(t, input))
+        if (!isDemo) await guarded((t) => api.dismissJobUpdate(t, u.id, true))
+        setJobUpdates((prev) => prev.filter((x) => x.id !== u.id))
+        setJobs((prev) =>
+          [job, ...prev.filter((x) => x.id !== job.id)].sort(
+            (a, b) => b.applied_date.localeCompare(a.applied_date) || b.created_at.localeCompare(a.created_at),
+          ),
+        )
+        setHighlightId(job.id)
+        return job
+      },
+
       manga,
       saveManga: async (input) => {
         const saved = isDemo ? demoSaveManga(manga, input) : await guarded((t) => api.saveManga(t, input))
@@ -470,7 +537,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       openMangaComposer: (editing) => setMangaComposer({ open: true, editing: editing ?? null }),
       closeMangaComposer: () => setMangaComposer((c) => ({ ...c, open: false })),
     }),
-    [status, loading, loadError, categories, transactions, jobs, reviews, news, newsRefreshing, leads, leadsInfo, manga, mangaComposer, navigate, composer, jobComposer, highlightId, token, guarded, load, resetToLock, startSession],
+    [status, loading, loadError, categories, transactions, jobs, reviews, news, newsRefreshing, leads, leadsInfo, jobUpdates, manga, mangaComposer, navigate, composer, jobComposer, highlightId, token, guarded, load, resetToLock, startSession],
   )
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

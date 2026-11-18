@@ -1,5 +1,5 @@
 import type { Category, Transaction } from './api'
-import type { CompanyReview, Job, JobCategory, JobFlexibility, JobInput, JobStatus } from './jobs'
+import type { CompanyReview, Job, JobCategory, JobFlexibility, JobInput, JobStatus, JobUpdate } from './jobs'
 import { STATUS } from './jobs'
 import type { JobLead } from './leads'
 import type { Manga, MangaInput } from './manga'
@@ -88,6 +88,24 @@ export function demoJobs(): Job[] {
     created_at: iso(applied),
     updated_at: iso(changed),
   }))
+}
+
+/** Updates from recruiting emails, matching the demo applications above (and one that isn't in the list) */
+export function demoJobUpdates(): JobUpdate[] {
+  const ago = (h: number) => new Date(Date.now() - h * 3600e3).toISOString()
+  const u = (id: string, h: number, sender: string, subject: string, kind: JobUpdate['kind'], job: number | null, prev: JobStatus | null, guess: [string, string] | null): JobUpdate => {
+    const j = job === null ? null : demoJobs()[job]
+    return {
+      id, received_at: ago(h), sender, subject, kind, evidence: null, job_id: j?.id ?? null, outcome: j ? 'updated' : 'unmatched', prev_status: prev,
+      company: j?.company ?? null, position: j?.position ?? null, status: j?.status ?? null,
+      guessed_company: guess?.[0] ?? null, guessed_position: guess?.[1] ?? null,
+    }
+  }
+  return [
+    u('upd-1', 5, 'Kirana Logistik <talent@kiranalogistik.co.id>', 'Undangan Interview User - Data Engineer', 'user_interview', 0, 'test', null),
+    u('upd-2', 30, 'Selaras Insurance <no-reply@hire.lever.co>', 'Thank you for your interest in Selaras Insurance', 'rejected', 8, 'applied', null),
+    u('upd-3', 52, 'Admin Rekrutmen <talent.acquisition@megagiga.co.id>', 'Undangan Tahap Asesmen', 'test', null, null, ['Megagiga', 'Data Engineer']),
+  ]
 }
 
 /** Demo mode only: apply a job save in memory, mirroring save_job's rules (clock reset, max stage). */

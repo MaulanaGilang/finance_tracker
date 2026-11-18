@@ -69,6 +69,28 @@ export const STATUS: Record<JobStatus, { label: string; short: string; color: st
   ghosted: { label: 'Ghosted', short: 'Ghosted', color: '#8a8b8c', stage: null },
 }
 
+/** A recruiting email that moved (or could move) an application: passed to a stage, or rejected */
+export interface JobUpdate {
+  id: string
+  received_at: string
+  sender: string
+  subject: string
+  kind: Exclude<JobStatus, 'applied' | 'accepted' | 'other' | 'ghosted'>
+  evidence: string | null
+  guessed_company: string | null
+  guessed_position: string | null
+  job_id: string | null
+  /** updated: the status was changed; unmatched: no application found for it */
+  outcome: 'updated' | 'unmatched'
+  prev_status: JobStatus | null
+  company: string | null
+  position: string | null
+  status: JobStatus | null
+}
+
+/** The sender's display name ("Traveloka" from "Traveloka <no-reply@mail-sg.mokahr.com>") */
+export const senderName = (from: string) => /^\s*"?([^"<]+?)"?\s*</.exec(from)?.[1] ?? from.replace(/<.*>/, '').trim()
+
 /** Board column / select order */
 export const STATUS_ORDER: JobStatus[] = [
   'applied',
