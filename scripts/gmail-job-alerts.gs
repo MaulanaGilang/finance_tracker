@@ -26,7 +26,7 @@ const QUERY =
 const STATUS_QUERY = (days) =>
   `newer_than:${days}d -from:me -in:spam -in:trash ` +
   '-from:(jobalerts-noreply@linkedin.com OR jobalert.indeed.com OR newsletters-noreply@linkedin.com OR jobs-listings@linkedin.com) ' +
-  '{subject:(lamaran OR lamaranmu OR application OR interview OR wawancara OR undangan OR invitation OR invited OR invite OR ' +
+  '{subject:(lamaran OR lamaranmu OR application OR interview OR wawancara OR undangan OR invitation OR invited OR invite OR invites OR inviting OR ' +
   'psikotes OR test OR tes OR asesmen OR assessment OR screening OR shortlisted OR seleksi OR selection OR offer OR offering OR ' +
   '"medical check" OR MCU OR recruitment OR rekrutmen OR recruiting OR hiring OR kandidat OR candidate OR pembaruan OR ' +
   '"your interest" OR "next step" OR "next stage" OR panggilan OR jadwal) ' +
