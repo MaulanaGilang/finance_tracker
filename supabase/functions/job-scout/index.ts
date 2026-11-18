@@ -27,12 +27,32 @@ async function applyStatusEmails(db: SupabaseClient, mails: Mail[]) {
   if (error) throw error
   const list = (jobs ?? []) as JobRow[]
   const tally: Record<string, number> = { emails: sorted.length, new: 0 }
+  // The same email sent twice (same sender, subject and verdict within a few days) counts once
+  const twinKey = (sender: string, subject: string, kind: string) => `${sender.toLowerCase()}|${subject.trim().toLowerCase()}|${kind}`
+  const { data: recent } = await db
+    .from('job_status_events')
+    .select('sender, subject, kind, received_at')
+    .gte('received_at', new Date(Date.parse(sorted[0]?.date ?? new Date().toISOString()) - 7 * 864e5).toISOString())
+  const twins = new Map<string, number>((recent ?? []).map((r) => [twinKey(r.sender, r.subject, r.kind), Date.parse(r.received_at)]))
 
   for (const m of sorted) {
     if (done.has(m.id)) continue
     tally.new++
     const v = classify(m)
     if (!v) continue
+    const key = twinKey(m.from.slice(0, 200), m.subject.slice(0, 300), v.kind)
+    const twin = twins.get(key)
+    if (twin !== undefined && Math.abs(Date.parse(m.date) - twin) < 3 * 864e5) {
+      // Logged (so it's skipped next time too), never shown or applied twice
+      const { error: e } = await db.from('job_status_events').insert({
+        message_id: m.id, received_at: m.date, sender: m.from.slice(0, 200), subject: m.subject.slice(0, 300), kind: v.kind,
+        evidence: 'same email as one already handled', outcome: 'already', dismissed: true,
+      })
+      if (e && e.code !== '23505') throw e
+      tally.duplicate = (tally.duplicate ?? 0) + 1
+      continue
+    }
+    twins.set(key, Date.parse(m.date))
     const match = matchJob(m, v, list)
     const row: Record<string, unknown> = {
       message_id: m.id, received_at: m.date, sender: m.from.slice(0, 200), subject: m.subject.slice(0, 300), kind: v.kind,

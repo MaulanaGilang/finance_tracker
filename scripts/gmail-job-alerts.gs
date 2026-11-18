@@ -21,16 +21,19 @@ const QUERY =
   'from:(jobalerts-noreply@linkedin.com OR jobs-noreply@linkedin.com OR jobs-listings@linkedin.com OR e.jobstreet.com OR jobstreet.com OR glints.com OR glints.id) ' +
   'newer_than:2d -label:Ledger-Sent'
 
-// Anything that might be about a recruiting process: from a hiring tool or job site, or with recruiting words in the subject.
-// Ledger decides what each one actually says, and ignores the rest.
+// Anything that might be about a recruiting process: from a hiring tool or job site, recruiting words in the subject,
+// or a recruiting phrase anywhere in the email. Ledger decides what each one actually says, and ignores the rest.
 const STATUS_QUERY = (days) =>
   `newer_than:${days}d -from:me -in:spam -in:trash ` +
   '-from:(jobalerts-noreply@linkedin.com OR jobalert.indeed.com OR newsletters-noreply@linkedin.com OR jobs-listings@linkedin.com) ' +
-  '{subject:(lamaran OR lamaranmu OR application OR interview OR wawancara OR undangan OR invitation OR psikotes OR test OR tes OR ' +
-  'asesmen OR assessment OR seleksi OR selection OR offer OR offering OR "medical check" OR MCU OR recruitment OR rekrutmen OR ' +
-  'kandidat OR candidate OR pembaruan OR "your interest") ' +
+  '{subject:(lamaran OR lamaranmu OR application OR interview OR wawancara OR undangan OR invitation OR invited OR invite OR ' +
+  'psikotes OR test OR tes OR asesmen OR assessment OR screening OR shortlisted OR seleksi OR selection OR offer OR offering OR ' +
+  '"medical check" OR MCU OR recruitment OR rekrutmen OR recruiting OR hiring OR kandidat OR candidate OR pembaruan OR ' +
+  '"your interest" OR "next step" OR "next stage" OR panggilan OR jadwal) ' +
   'from:(lever.co OR greenhouse.io OR darwinbox OR mokahr OR gohire OR indeed.com OR jobstreet OR jobs-noreply@linkedin.com OR ' +
-  'glints OR kalibrr OR techinasia OR workable OR smartrecruiters OR ashbyhq)}'
+  'glints OR kalibrr OR techinasia OR workable OR smartrecruiters OR ashbyhq OR recruiting OR recruitment OR careers OR talent) ' +
+  '"screening process" OR "proses seleksi" OR "tahap seleksi" OR "regret to inform" OR "move forward with other" OR ' +
+  '"not moving forward" OR "tahap selanjutnya" OR "next stage of"}'
 
 function post(action, messages) {
   for (let i = 0; i < messages.length; i += 20) {

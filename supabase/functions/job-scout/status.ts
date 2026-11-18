@@ -22,11 +22,15 @@ export const norm = (s: string) =>
 // ---------------------------------------------------------------------------
 // What the email says
 
-// Job alerts, receipts, newsletters: never a status change
-const NOT_STATUS_FROM = /jobalert|jobalerts-noreply|newsletters?-noreply|jobs-listings@linkedin|messages-noreply@linkedin|indeedapply@indeed|notifications-noreply@linkedin|editors-noreply/i
+// Job alerts, receipts, newsletters: never a status change. Exact senders only: a company's own recruiting address
+// can contain the same words (Thales writes from recruiting@jobalerts.thalesgroup.com)
+const NOT_STATUS_FROM = /jobalerts-noreply@linkedin|@jobalert\.indeed\.com|newsletters?-noreply@linkedin|jobs-listings@linkedin|messages-noreply@linkedin|indeedapply@indeed|notifications-noreply@linkedin|editors-noreply@linkedin/i
 const NOT_STATUS_SUBJECT = /peringatan pekerjaan|lowongan (kerja )?baru|rekomendasi|new jobs?\b|jobs? (for|in|near) you|jobs? you may|webinar|newsletter|^indeed application:|your application was sent|lamaran(mu)? (telah )?terkirim|application (received|submitted)|thank you for (applying|your application)$/i
 
-const CONTEXT = /lamaran|melamar|application|applying|applied|posisi|position|\brole\b|seleksi|selection|recruit|rekrutmen|kandidat|candidate|interview|wawancara|psikotes|hiring|talent/i
+const CONTEXT = /lamaran|melamar|application|applying|applied|posisi|position|\brole\b|seleksi|selection|recruit|rekrutmen|kandidat|candidate|interview|wawancara|psikotes|hiring|talent|screening/i
+
+/** Plain-text emails wrap lines mid-sentence ("tidak akan mengalami\nkemajuan"): phrases are matched on one line */
+const flat = (s: string) => s.replace(/\s+/g, ' ')
 
 const REJECTED = [
   /unfortunately/i, /regret to inform/i, /\bwe regret\b/i, /not (?:be )?moving forward/i, /not (?:to )?move forward/i,
@@ -36,6 +40,7 @@ const REJECTED = [
   /no longer (?:under consideration|being considered)/i, /decided not to (?:proceed|move forward|progress)/i,
   /tidak (?:dapat|bisa) (?:melanjutkan|kami lanjutkan|diproses|memproses)/i, /belum (?:dapat|bisa) (?:melanjutkan|kami lanjutkan|memproses)/i,
   /tidak lolos/i, /belum lolos/i, /(?:tidak|belum) berhasil/i, /tidak akan mengalami kemajuan/i, /(?:tidak|belum) terpilih/i,
+  /(?:tidak|belum) (?:dapat|bisa) dilanjutkan/i,
   /kandidat lain yang lebih/i, /kualifikasi (?:anda |kamu )?(?:belum|tidak) (?:sesuai|memenuhi)/i, /tidak dapat kami proses/i,
 ]
 
@@ -44,7 +49,7 @@ const STAGES: [Stage, RegExp][] = [
   ['offer', /offering letter|offer letter|job offer|surat penawaran|penawaran kerja|pleased to offer you|offer you the position|would like to offer you|letter of offer/i],
   ['medical_checkup', /medical check|\bmcu\b|pemeriksaan kesehatan|tes kesehatan|cek kesehatan/i],
   ['user_interview', /user interview|interview user|wawancara user|interview (?:dengan|with) (?:the )?(?:user|hiring manager)|hiring manager|final interview|interview akhir|wawancara akhir|technical interview|interview teknis|wawancara teknis|interview tahap (?:2|dua|ii|kedua|lanjut)/i],
-  ['test', /psikotes|psiko tes|psychotest|psychological test|online test|tes online|test online|skill test|tes skill|technical test|technical assessment|coding test|coding challenge|test case|case study|studi kasus|take[- ]home|\bassessment\b|\basesmen\b|\bassesment\b|tes tertulis|tes tahap|tahap tes|tes kemampuan|hackerrank|codility|\btes\b|\btest\b/i],
+  ['test', /screening (?:process|questions?|questionnaire|test|assessment|results?)|questionnaire|kuesioner|psikotes|psiko tes|psychotest|psychological test|online test|tes online|test online|skill test|tes skill|technical test|technical assessment|coding test|coding challenge|test case|case study|studi kasus|take[- ]home|\bassessment\b|\basesmen\b|\bassesment\b|tes tertulis|tes tahap|tahap tes|tes kemampuan|hackerrank|codility|\btes\b|\btest\b/i],
   ['hr_interview', /\binterview\b|wawancara|phone screen|screening call|\bhr call\b|video call|panggilan/i],
 ]
 
@@ -75,12 +80,12 @@ export function classify(m: Mail): Verdict | null {
   // JobStreet: "Pembaruan lamaran untuk <position> di <company>" ... "tidak akan mengalami kemajuan lebih jauh"
   if (from.includes('jobstreet')) {
     const s = /^pembaruan lamaran untuk (.+) di (.+)$/i.exec(clean(m.subject))
-    if (s && /tidak akan mengalami kemajuan|not (?:be )?progress/i.test(m.body))
+    if (s && /tidak akan mengalami kemajuan|(?:belum|tidak) dapat dilanjutkan|not (?:be )?progress/i.test(flat(m.body.slice(0, 4000))))
       return { kind: 'rejected', evidence: 'JobStreet: lamaran tidak akan mengalami kemajuan', position: s[1], company: s[2] }
     return null
   }
 
-  const text = `${m.subject}\n${m.body.slice(0, 4000)}`
+  const text = flat(`${m.subject}\n${m.body.slice(0, 4000)}`)
   if (!CONTEXT.test(text)) return null
   const guess = guessJob(m)
 
@@ -107,7 +112,9 @@ const NAME_NOISE = /\b(job|jobs|recruitment|recruiting|recruiter|rekrutmen|talen
 export function senderCompany(from: string) {
   const name = clean((/^\s*"?([^"<]+?)"?\s*</.exec(from)?.[1] ?? '').replace(NAME_NOISE, ' '))
   const domain = /@([a-z0-9.-]+)/i.exec(from)?.[1]?.toLowerCase() ?? ''
-  const own = ATS_DOMAINS.test(domain) ? '' : domain.split('.').filter((p) => !/^(co|com|id|net|org|mail|email|hr|careers?|jobs?|www)$/.test(p))[0] ?? ''
+  const own = ATS_DOMAINS.test(domain)
+    ? ''
+    : domain.split('.').filter((p) => !/^(co|com|id|net|org|mail|email|e|hr|careers?|jobs?|jobalerts?|recruit\w*|talent|notifications?|no-?reply|www)$/.test(p))[0] ?? ''
   return { name: name.length >= 2 ? name : '', domain: own }
 }
 
