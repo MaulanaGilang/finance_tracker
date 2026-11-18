@@ -95,6 +95,12 @@
   ::selection {
     background: rgb(255 255 255 / 0.22);
   }
+  /* Dropdown lists: Windows draws them on white, which hid our white text; give them the dark surface */
+  select option,
+  select optgroup {
+    background-color: #111214;
+    color: #ffffff;
+  }
   input[type="date"]::-webkit-calendar-picker-indicator {
     opacity: 0.55;
     cursor: pointer;

@@ -249,8 +249,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setStatus('ready')
       return
     }
-    if (token) load(token)
-    else resetToLock()
+    if (token) {
+      // A reload within the same visit: show the app at once and fill it in as data arrives
+      setStatus('ready')
+      void load(token)
+    } else resetToLock()
     // run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -303,7 +306,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (t: string) => {
       writeToken(t)
       setToken(t)
-      await load(t)
+      // In straight away: pages show their placeholders while the data arrives, instead of holding you at the PIN
+      setStatus('ready')
+      void load(t)
     },
     [load],
   )

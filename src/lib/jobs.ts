@@ -296,6 +296,7 @@ export function salaryOverview(jobs: Job[]) {
   return {
     ranged,
     median,
+    average: mids.reduce((s, n) => s + n, 0) / mids.length,
     floor: Math.min(...ranged.map((r) => r.lo)),
     ceiling: Math.max(...ranged.map((r) => r.hi)),
     withSalary: ranged.length,

@@ -365,10 +365,14 @@ function Salary({ data }: { data: ReturnType<typeof salaryOverview> }) {
   return (
     <Card>
       <CardTitle>Salary overview</CardTitle>
-      <dl className="mb-6 grid grid-cols-3 gap-4">
+      <dl className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
           <dt className="mb-1 text-[13px] text-muted">Median offer</dt>
           <dd className="font-display text-[20px] tabular-nums sm:text-[24px]">Rp {formatJuta(data.median)}</dd>
+        </div>
+        <div>
+          <dt className="mb-1 text-[13px] text-muted">Average offer</dt>
+          <dd className="font-display text-[20px] tabular-nums sm:text-[24px]">Rp {formatJuta(data.average)}</dd>
         </div>
         <div>
           <dt className="mb-1 text-[13px] text-muted">Range seen</dt>
