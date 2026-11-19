@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowCounterClockwise, ArrowRight, ArrowUpRight, CheckCircle, EnvelopeSimple, HourglassMedium, Plus, X } from '@phosphor-icons/react'
@@ -78,7 +78,7 @@ export function JobsDashboard() {
             <p className="mb-3 text-[14px] text-white/70">Active applications</p>
             <AnimatedNumber value={k.active} springOptions={numberSpring} className="block font-display text-[56px] leading-[1.05] sm:text-[64px]" />
             <p className="mt-3 text-[13px] leading-[1.6] text-white/70">
-              {k.total} sent · {Math.round(k.responseRate * 100)}% got a response
+              {k.total} sent Â· {Math.round(k.responseRate * 100)}% got a response
               <br />
               {k.inactive} inactive ({k.rejected} rejected, {k.ghosted} ghosted)
             </p>
@@ -172,7 +172,7 @@ function HeroStat({ label, value }: { label: string; value: number }) {
   )
 }
 
-/** Recruiting emails from the last 30 days: who moved you forward, who said no, and emails about applications not in your list */
+/** Recruiting emails from the last 7 days: who moved you forward, who said no, and emails about applications not in your list */
 function EmailUpdates() {
   const { jobUpdates } = useStore()
   const passed = jobUpdates.filter((u) => u.outcome === 'updated' && u.kind !== 'rejected').length
@@ -194,7 +194,7 @@ function EmailUpdates() {
       {jobUpdates.length === 0 ? (
         <p className="flex items-start gap-3 text-[14px] leading-[1.5] text-muted">
           <EnvelopeSimple size={18} className="mt-0.5 shrink-0" />
-          Nothing new in the last 30 days. Interview invites, tests, offers and rejections in your Gmail update your applications here each morning.
+          Nothing new in the last 7 days. Interview invites, tests, offers and rejections in your Gmail update your applications here each morning.
         </p>
       ) : (
         <ul className="-mx-2 flex flex-col sm:-mx-3">
@@ -258,11 +258,11 @@ function EmailUpdateRow({ u }: { u: JobUpdate }) {
               <span className="truncate text-[14px] font-medium">{company ?? senderName(u.sender)}</span>
             )}
             <span className={cx('text-[13px]', !matched ? 'text-muted' : rejected ? 'text-expense' : 'text-income')}>
-              {!matched ? `Not in your list · ${STATUS[u.kind].label}` : rejected ? 'Rejected' : `Passed to ${STATUS[u.kind].label}`}
+              {!matched ? `Not in your list Â· ${STATUS[u.kind].label}` : rejected ? 'Rejected' : `Passed to ${STATUS[u.kind].label}`}
             </span>
           </p>
           <p className="truncate text-[13px] text-muted">
-            {[position, `“${u.subject}”`, timeAgo(u.received_at)].filter(Boolean).join(' · ')}
+            {[position, `â€œ${u.subject}â€`, timeAgo(u.received_at)].filter(Boolean).join(' Â· ')}
           </p>
           {error && <p className="mt-1 text-[12px] text-expense">{error}</p>}
         </div>
@@ -389,7 +389,7 @@ function Salary({ data }: { data: ReturnType<typeof salaryOverview> }) {
         {data.ranged.slice(0, 8).map(({ job, lo, hi }, i) => (
           <li key={job.id} className="grid grid-cols-1 gap-1.5 sm:grid-cols-[14rem_1fr_7.5rem] sm:items-center sm:gap-4">
             <span className="min-w-0 truncate text-[14px]">
-              {job.company} <span className="text-muted">· {job.position}</span>
+              {job.company} <span className="text-muted">Â· {job.position}</span>
             </span>
             <span className="relative h-2">
               <motion.span

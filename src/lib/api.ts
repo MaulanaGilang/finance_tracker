@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+﻿import { createClient } from '@supabase/supabase-js'
 import type { CompanyReview, Job, JobInput, JobUpdate } from './jobs'
 import type { JobLead } from './leads'
 import type { Manga, MangaCandidate, MangaInput } from './manga'
@@ -121,7 +121,7 @@ export const api = {
   /** One batch of the company-board scan (each company at most once a day) */
   scanJobs: () => invoke<{ scanned: number; added: Record<string, number | string>; remaining: number }>('job-scout', { action: 'scan' }),
 
-  /** Status changes made from recruiting emails, and emails no application matched (last 30 days) */
+  /** Status changes made from recruiting emails, and emails no application matched (last 7 days) */
   getJobUpdates: (token: string) => rpc<{ updates: JobUpdate[]; last_email: string | null }>('get_job_updates', { p_token: token }),
   /** Put the application back as it was before the email changed it */
   undoJobUpdate: async (token: string, id: string) => toJob(await rpc<Job>('undo_job_update', { p_token: token, p_id: id })),

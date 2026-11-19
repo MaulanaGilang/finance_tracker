@@ -1,4 +1,4 @@
--- Application status from recruiting emails. The Gmail script sends recruiting emails to the job-scout function
+﻿-- Application status from recruiting emails. The Gmail script sends recruiting emails to the job-scout function
 -- (action "status"), which decides what each says (passed to a stage, or rejected), finds the application,
 -- moves its status forward and logs it here with the previous values, so any change can be undone.
 
@@ -31,7 +31,7 @@ create index job_status_events_received_idx on public.job_status_events (receive
 alter table public.job_status_events enable row level security;
 revoke all on public.job_status_events from anon, authenticated;
 
--- What the dashboard shows: changes and unmatched emails from the last 30 days you haven't dismissed
+-- What the dashboard shows: changes and unmatched emails from the last 7 days you haven't dismissed
 create or replace function public.get_job_updates(p_token text)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 begin
@@ -46,7 +46,7 @@ begin
         order by e.received_at desc)
       from public.job_status_events e
       left join public.job_applications j on j.id = e.job_id
-      where e.outcome in ('updated', 'unmatched') and not e.dismissed and e.received_at > now() - interval '30 days'), '[]'::jsonb),
+      where e.outcome in ('updated', 'unmatched') and not e.dismissed and e.received_at > now() - interval '7 days'), '[]'::jsonb),
     'last_email', (select max(created_at) from public.job_status_events)
   );
 end $$;
