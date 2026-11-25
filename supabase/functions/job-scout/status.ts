@@ -41,6 +41,10 @@ const REJECTED = [
   /tidak (?:dapat|bisa) (?:melanjutkan|kami lanjutkan|diproses|memproses)/i, /belum (?:dapat|bisa) (?:melanjutkan|kami lanjutkan|memproses)/i,
   /tidak lolos/i, /belum lolos/i, /(?:tidak|belum) berhasil/i, /tidak akan mengalami kemajuan/i, /(?:tidak|belum) terpilih/i,
   /(?:tidak|belum) (?:dapat|bisa) dilanjutkan/i,
+  // The vacancy closed or was filled, and your process stops with it (Astra: "Kuota Lowongan Telah Terpenuhi")
+  /(?:kuota|kebutuhan)[^.]{0,60}telah terpenuhi/i, /lowongan[^.]{0,40}(?:telah )?(?:resmi )?(?:kami )?tutup/i,
+  /proses (?:rekrutmen|seleksi)[^.]{0,40}(?:kami )?(?:hentikan|dihentikan)/i,
+  /(?:position|vacancy|role|requisition) has (?:now )?been (?:closed|filled|cancelled)/i,
   /kandidat lain yang lebih/i, /kualifikasi (?:anda |kamu )?(?:belum|tidak) (?:sesuai|memenuhi)/i, /tidak dapat kami proses/i,
 ]
 
@@ -49,12 +53,16 @@ const STAGES: [Stage, RegExp][] = [
   ['offer', /offering letter|offer letter|job offer|surat penawaran|penawaran kerja|pleased to offer you|offer you the position|would like to offer you|letter of offer/i],
   ['medical_checkup', /medical check|\bmcu\b|pemeriksaan kesehatan|tes kesehatan|cek kesehatan/i],
   ['user_interview', /user interview|interview user|wawancara user|interview (?:dengan|with) (?:the )?(?:user|hiring manager)|hiring manager|final interview|interview akhir|wawancara akhir|technical interview|interview teknis|wawancara teknis|interview tahap (?:2|dua|ii|kedua|lanjut)/i],
-  ['test', /screening (?:process|questions?|questionnaire|test|assessment|results?)|questionnaire|kuesioner|psikotes|psiko tes|psychotest|psychological test|online test|tes online|test online|skill test|tes skill|technical test|technical assessment|coding test|coding challenge|test case|case study|studi kasus|take[- ]home|\bassessment\b|\basesmen\b|\bassesment\b|tes tertulis|tes tahap|tahap tes|tes kemampuan|hackerrank|codility|\btes\b|\btest\b/i],
+  ['test', /screening (?:process|questions?|questionnaire|test|assessment|results?)|questionnaire|kuesioner|psikotes|psiko tes|psychotest|psychological test|online test|tes online|test online|skill test|tes skill|technical test|technical assessment|coding test|coding challenge|test case|case study|studi kasus|take[- ]home|\bassessment\b(?!\s+(?:center|centre|team))|\basesmen\b(?!\s+center)|\bassesment\b|tes tertulis|tes tahap|tahap tes|tes kemampuan|hackerrank|codility|\btes\b|\btest\b/i],
   ['hr_interview', /\binterview\b|wawancara|phone screen|screening call|\bhr call\b|video call|panggilan/i],
 ]
 
 // A real invitation, not a mention: asks you to do something, or congratulates you
 const INVITE = /invit|undang|selamat|congratulat|lolos|passed|\bschedul|jadwal|next (?:stage|step|round)|tahap (?:selanjutnya|berikut)|please (?:join|complete|attend|confirm|find|fill|submit|reply)|silakan|silahkan|mohon (?:untuk )?(?:hadir|mengerjakan|mengisi|konfirmasi|kesediaan)|kerjakan|berikut|deadline|batas waktu|link|tautan|zoom|google meet|teams/i
+
+const RECEIPT = /successfully applied|application (?:has been )?(?:received|submitted)|we have received your application|berhasil mendaftar|lamaran (?:anda|kamu) (?:sudah|telah) (?:kami )?(?:terima|diterima)/i
+// Words that make it a real invitation even when it opens with "we've received your application"
+const STRONG_INVITE = /invit|undang|selamat|congratulat|lolos|shortlist/i
 
 const firstHit = (res: RegExp[], text: string) => {
   for (const re of res) {
@@ -92,6 +100,8 @@ export function classify(m: Mail): Verdict | null {
   const rejected = firstHit(REJECTED, text)
   if (rejected) return { kind: 'rejected', evidence: rejected, ...guess }
 
+  // A receipt ("you have successfully applied", "lamaran Anda sudah kami terima") isn't a step forward
+  if (RECEIPT.test(text) && !STRONG_INVITE.test(text)) return null
   if (!INVITE.test(text)) return null
   for (const [stage, re] of STAGES) {
     const hit = re.exec(text)
